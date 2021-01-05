@@ -31,48 +31,59 @@ def level_1():
     Border(5, 20, 5, height - 5, 'left')
     Border(weight - 5, 20, weight - 5, height - 5, 'right')
 
-    Ball(20, 350, 150)
-    Ball(20, 300, 150)
+    Ball(350, 150)
+    Ball(300, 150)
 
-    Coin(10, 30, 500, 200)
-    Coin(10, 30, 550, 250)
+    Coin(10, 500, 200)
+    Coin(10, 550, 250)
 
 
 class Ball(pygame.sprite.Sprite):
     image = load_image("spear1.png", -1)
 
-    def __init__(self, radius, x, y):
+    def __init__(self, x, y):
         super().__init__(all_sprites)
-        self.radius = radius
-        self.x = x
-        self.y = y
+
         self.image = pygame.transform.scale(Ball.image, (70, 70))
-        self.rect = pygame.Rect(self.x, self.y, 2 * radius, 2 * radius)
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x
+        self.rect.y = y
         self.vx = 0
         self.vy = random.choice([1.2, -1.2])
         self.add(balls_group)
 
     def update(self):
-        self.y += self.vy
-        self.x += self.vx
-        self.rect = pygame.Rect(self.x, self.y, 2 * self.radius, 2 * self.radius)
+        self.rect.y += self.vy
+        self.rect.x += self.vx
         if pygame.sprite.spritecollideany(self, horizontal_borders):
             self.vy = -self.vy
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.vx = -self.vx
+        if pygame.sprite.collide_mask(self, char):
+            char.x = 5
+            char.y = 5
 
 
 class Coin(pygame.sprite.Sprite):
     image = load_image("Coin 64-64.png", -1)
 
-    def __init__(self, radius, points, x, y):
+    def __init__(self, points, x, y):
         super().__init__(all_sprites)
-        self.x = x
-        self.y = y
         self.points = points
         self.image = Coin.image
-        self.rect = pygame.Rect(self.x, self.y, 2 * radius, 2 * radius)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.mask = pygame.mask.from_surface(self.image)
         self.add(coins_group)
+
+    def update(self):
+        if pygame.sprite.collide_mask(self, char):
+
+            global score
+            score += self.points
+            pygame.sprite.spritecollide(char, coins_group, True)
 
 
 class Character(pygame.sprite.Sprite):
@@ -102,13 +113,6 @@ class Character(pygame.sprite.Sprite):
             self.y = int(self.y) + pygame.sprite.spritecollideany(self, horizontal_borders).coeff
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.x = int(self.x) + pygame.sprite.spritecollideany(self, vertical_borders).coeff
-        if pygame.sprite.spritecollideany(self, balls_group):
-            self.x = 5
-            self.y = 5
-        if pygame.sprite.spritecollideany(self, coins_group):
-            global score
-            score += pygame.sprite.spritecollideany(self, coins_group).points
-            pygame.sprite.spritecollide(self, coins_group, True)
 
 
 class Border(pygame.sprite.Sprite):
