@@ -2,6 +2,7 @@ import os
 import random
 import sys
 import pygame
+import pygame_gui
 
 pygame.init()
 size = weight, height = (800, 450)
@@ -22,19 +23,6 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
-
-
-def level_1():
-    Border(5, 20, weight - 5, 20, 'top')
-    Border(5, height - 5, weight - 5, height - 5, 'bottom')
-    Border(5, 20, 5, height - 5, 'left')
-    Border(weight - 5, 20, weight - 5, height - 5, 'right')
-
-    Ball(20, 350, 150)
-    Ball(20, 300, 150)
-
-    Coin(10, 30, 500, 200)
-    Coin(10, 30, 550, 250)
 
 
 class Ball(pygame.sprite.Sprite):
@@ -148,32 +136,70 @@ Ball(20, 300, 150)
 Coin(10, 30, 500, 200)
 Coin(10, 30, 550, 250)
 
+game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
+pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время паузы
+
+pause_background = pygame.Surface((200, 250))
+pause_background.fill(pygame.Color('grey'))
+
+game_btn = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((0, 0), (20, 20)),
+    text='||',
+    manager=game_manager
+)
+pause_btn1 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 190), (100, 20)),
+    text='Continue',
+    manager=pause_manager
+)
+
 score = 0
 fps = 330
 clock = pygame.time.Clock()
 running = True
-
+pause = False
+game = True
 while running:
     screen.fill('white')
+    time_delta = clock.tick(fps)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP]:
-        char.move('up')
-    if keys[pygame.K_LEFT]:
-        char.move('left')
-    if keys[pygame.K_DOWN]:
-        char.move('down')
-    if keys[pygame.K_RIGHT]:
-        char.move('right')
-    char.move(motion_keys)
+        if event.type == pygame.USEREVENT:
+            if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == pause_btn1:
+                    pause = False
+                    game = True
+                if event.ui_element == game_btn:
+                    pause = True
+                    game = False
+        if game:
+            game_manager.process_events(event)
+        if pause:
+            pause_manager.process_events(event)
 
-    all_sprites.update()
+    if game:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            char.move('up')
+        if keys[pygame.K_LEFT]:
+            char.move('left')
+        if keys[pygame.K_DOWN]:
+            char.move('down')
+        if keys[pygame.K_RIGHT]:
+            char.move('right')
+        all_sprites.update()
+
+    game_manager.update(time_delta)
+    game_manager.draw_ui(screen)
+    char.move(motion_keys)
     all_sprites.draw(screen)
 
-    clock.tick(fps)
+    if pause:
+        screen.blit(pause_background, (300, 100))
+        pause_manager.update(time_delta)
+        pause_manager.draw_ui(screen)
     pygame.display.flip()
 
 pygame.quit()
