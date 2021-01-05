@@ -1,8 +1,8 @@
 import os
 import random
 import sys
-import pygame
 import pygame_gui
+import pygame
 
 pygame.init()
 size = weight, height = (800, 450)
@@ -23,6 +23,19 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def level_1():
+    Border(5, 20, weight - 5, 20, 'top')
+    Border(5, height - 5, weight - 5, height - 5, 'bottom')
+    Border(5, 20, 5, height - 5, 'left')
+    Border(weight - 5, 20, weight - 5, height - 5, 'right')
+
+    Ball(20, 350, 150)
+    Ball(20, 300, 150)
+
+    Coin(10, 30, 500, 200)
+    Coin(10, 30, 550, 250)
 
 
 class Ball(pygame.sprite.Sprite):
@@ -125,19 +138,8 @@ coins_group = pygame.sprite.Group()
 char = Character()
 motion_keys = {'left': False, 'right': False, 'up': False, 'down': False}
 
-Border(5, 20, weight - 5, 20, 'top')
-Border(5, height - 5, weight - 5, height - 5, 'bottom')
-Border(5, 20, 5, height - 5, 'left')
-Border(weight - 5, 20, weight - 5, height - 5, 'right')
-
-Ball(20, 350, 150)
-Ball(20, 300, 150)
-
-Coin(10, 30, 500, 200)
-Coin(10, 30, 550, 250)
-
-game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
-pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время паузы
+game_manager = pygame_gui.UIManager(size)
+pause_manager = pygame_gui.UIManager(size)
 
 pause_background = pygame.Surface((200, 250))
 pause_background.fill(pygame.Color('grey'))
@@ -152,8 +154,15 @@ pause_btn1 = pygame_gui.elements.UIButton(
     text='Continue',
     manager=pause_manager
 )
+pause_btn2 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 220), (100, 20)),
+    text='print hello',
+    manager=pause_manager
+)
 
 score = 0
+level_1()
+
 fps = 330
 clock = pygame.time.Clock()
 running = True
@@ -165,6 +174,14 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE and not pause:
+                pause = True
+                game = False
+            elif event.key == pygame.K_ESCAPE and pause:
+                pause = False
+                game = True
 
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
@@ -190,7 +207,6 @@ while running:
         if keys[pygame.K_RIGHT]:
             char.move('right')
         all_sprites.update()
-
     game_manager.update(time_delta)
     game_manager.draw_ui(screen)
     char.move(motion_keys)
