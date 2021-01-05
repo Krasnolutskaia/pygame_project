@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 import pygame_gui
 import pygame
@@ -26,22 +25,35 @@ def load_image(name, colorkey=None):
 
 
 def level_1():
+    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char
+    all_sprites = pygame.sprite.Group()
+    horizontal_borders = pygame.sprite.Group()
+    vertical_borders = pygame.sprite.Group()
+    balls_group = pygame.sprite.Group()
+    coins_group = pygame.sprite.Group()
+    char = Character()
+
     Border(5, 20, weight - 5, 20, 'top')
     Border(5, height - 5, weight - 5, height - 5, 'bottom')
     Border(5, 20, 5, height - 5, 'left')
     Border(weight - 5, 20, weight - 5, height - 5, 'right')
 
-    Ball(350, 150)
-    Ball(300, 150)
+    Ball(350, 150, 1, 0)
+    Ball(300, 150, 0, 1.2)
 
     Coin(10, 500, 200)
     Coin(10, 550, 250)
 
 
+class Finish(pygame.sprite.Sprite):
+    def __init__(self, x, y, len_x, len_y):
+        super().__init__(all_sprites)
+
+
 class Ball(pygame.sprite.Sprite):
     image = load_image("spear1.png", -1)
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, vx, vy):
         super().__init__(all_sprites)
 
         self.image = pygame.transform.scale(Ball.image, (70, 70))
@@ -49,15 +61,17 @@ class Ball(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
-        self.vx = 0
-        self.vy = random.choice([1.2, -1.2])
+        self.vx = vx
+        self.vy = vy
         self.add(balls_group)
 
     def update(self):
         self.rect.y += self.vy
         self.rect.x += self.vx
         if pygame.sprite.spritecollideany(self, horizontal_borders):
+            print(self.vy)
             self.vy = -self.vy
+            print(self.vy)
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.vx = -self.vx
         if pygame.sprite.collide_mask(self, char):
@@ -95,7 +109,6 @@ class Character(pygame.sprite.Sprite):
         self.image = pygame.Surface((self.x_size, self.y_size))
         self.image.fill(self.color)
         self.rect = pygame.Rect(self.x, self.y, self.x_size, self.y_size)
-        self.add(char_group)
 
     def move(self, direction):
         if direction == 'right':
@@ -132,18 +145,8 @@ class Border(pygame.sprite.Sprite):
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
 
-all_sprites = pygame.sprite.Group()
-horizontal_borders = pygame.sprite.Group()
-vertical_borders = pygame.sprite.Group()
-balls_group = pygame.sprite.Group()
-char_group = pygame.sprite.Group()
-coins_group = pygame.sprite.Group()
-
-char = Character()
-motion_keys = {'left': False, 'right': False, 'up': False, 'down': False}
-
-game_manager = pygame_gui.UIManager(size)
-pause_manager = pygame_gui.UIManager(size)
+game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
+pause_manager = pygame_gui.UIManager(size) # менеджер для ГИ во время паузы
 
 pause_background = pygame.Surface((200, 250))
 pause_background.fill(pygame.Color('grey'))
@@ -160,9 +163,16 @@ pause_btn1 = pygame_gui.elements.UIButton(
 )
 pause_btn2 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 220), (100, 20)),
-    text='print hello',
+    text='Restart',
     manager=pause_manager
 )
+
+all_sprites = pygame.sprite.Group()
+horizontal_borders = pygame.sprite.Group()
+vertical_borders = pygame.sprite.Group()
+balls_group = pygame.sprite.Group()
+coins_group = pygame.sprite.Group()
+char = Character()
 
 score = 0
 level_1()
@@ -192,6 +202,10 @@ while running:
                 if event.ui_element == pause_btn1:
                     pause = False
                     game = True
+                if event.ui_element == pause_btn2:
+                    level_1()
+                    pause = False
+                    game = True
                 if event.ui_element == game_btn:
                     pause = True
                     game = False
@@ -213,7 +227,6 @@ while running:
         all_sprites.update()
     game_manager.update(time_delta)
     game_manager.draw_ui(screen)
-    char.move(motion_keys)
     all_sprites.draw(screen)
 
     if pause:
