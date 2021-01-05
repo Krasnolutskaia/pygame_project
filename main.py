@@ -147,6 +147,20 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP]:
+        char.move('up')
+    if keys[pygame.K_LEFT]:
+        char.move('left')
+    if keys[pygame.K_DOWN]:
+        char.move('down')
+    if keys[pygame.K_RIGHT]:
+        char.move('right')
+    char.move(motion_keys)
+
+    all_sprites.update()
+    all_sprites.draw(screen)
+
     clock.tick(fps)
     pygame.display.flip()
 
