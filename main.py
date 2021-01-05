@@ -137,6 +137,18 @@ coins_group = pygame.sprite.Group()
 char = Character()
 motion_keys = {'left': False, 'right': False, 'up': False, 'down': False}
 
+Border(5, 20, weight - 5, 20, 'top')
+Border(5, height - 5, weight - 5, height - 5, 'bottom')
+Border(5, 20, 5, height - 5, 'left')
+Border(weight - 5, 20, weight - 5, height - 5, 'right')
+
+Ball(20, 350, 150)
+Ball(20, 300, 150)
+
+Coin(10, 30, 500, 200)
+Coin(10, 30, 550, 250)
+
+score = 0
 fps = 330
 clock = pygame.time.Clock()
 running = True
