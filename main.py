@@ -33,10 +33,10 @@ def level_1():
     coins_group = pygame.sprite.Group()
     char = Character()
 
-    Border(5, 20, weight - 5, 20, 'top')
+    Border(5, 30, weight - 5, 30, 'top')
     Border(5, height - 5, weight - 5, height - 5, 'bottom')
-    Border(5, 20, 5, height - 5, 'left')
-    Border(weight - 5, 20, weight - 5, height - 5, 'right')
+    Border(5, 30, 5, height - 5, 'left')
+    Border(weight - 5, 30, weight - 5, height - 5, 'right')
 
     Ball(350, 150, 1, 0)
     Ball(300, 150, 0, 1.2)
@@ -51,12 +51,12 @@ class Finish(pygame.sprite.Sprite):
 
 
 class Ball(pygame.sprite.Sprite):
-    image = load_image("spear1.png", -1)
+    image = load_image("spear3.png", -1)
 
     def __init__(self, x, y, vx, vy):
         super().__init__(all_sprites)
 
-        self.image = pygame.transform.scale(Ball.image, (70, 70))
+        self.image = pygame.transform.scale(Ball.image, (65, 65))
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
@@ -66,17 +66,14 @@ class Ball(pygame.sprite.Sprite):
         self.add(balls_group)
 
     def update(self):
-        self.rect.y += self.vy
-        self.rect.x += self.vx
+        self.rect = self.rect.move(self.vx, self.vy)
         if pygame.sprite.spritecollideany(self, horizontal_borders):
-            print(self.vy)
             self.vy = -self.vy
-            print(self.vy)
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.vx = -self.vx
         if pygame.sprite.collide_mask(self, char):
-            char.x = 5
-            char.y = 5
+            char.x = 10
+            char.y = 35
 
 
 class Coin(pygame.sprite.Sprite):
@@ -104,7 +101,8 @@ class Character(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.x_size = self.y_size = 50
-        self.x = self.y = 10
+        self.x = 10
+        self.y = 35
         self.color = (220, 220, 255)
         self.image = pygame.Surface((self.x_size, self.y_size))
         self.image.fill(self.color)
@@ -145,14 +143,23 @@ class Border(pygame.sprite.Sprite):
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
 
+menu_manager = pygame_gui.UIManager(size)  # менеджер для ГИ в главном меню
 game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
-pause_manager = pygame_gui.UIManager(size) # менеджер для ГИ во время паузы
+pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время паузы
 
 pause_background = pygame.Surface((200, 250))
 pause_background.fill(pygame.Color('grey'))
 
+menu_background = pygame.Surface(size)
+menu_background.fill(pygame.Color('grey'))
+
+menu_btn1 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 190), (100, 20)),
+    text='1 level',
+    manager=menu_manager
+)
 game_btn = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((0, 0), (20, 20)),
+    relative_rect=pygame.Rect((5, 5), (20, 20)),
     text='||',
     manager=game_manager
 )
@@ -166,6 +173,11 @@ pause_btn2 = pygame_gui.elements.UIButton(
     text='Restart',
     manager=pause_manager
 )
+pause_btn3 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 250), (100, 20)),
+    text='Main menu',
+    manager=pause_manager
+)
 
 all_sprites = pygame.sprite.Group()
 horizontal_borders = pygame.sprite.Group()
@@ -175,13 +187,13 @@ coins_group = pygame.sprite.Group()
 char = Character()
 
 score = 0
-level_1()
 
 fps = 330
 clock = pygame.time.Clock()
 running = True
 pause = False
-game = True
+game = False
+menu = True
 while running:
     screen.fill('white')
     time_delta = clock.tick(fps)
@@ -209,10 +221,21 @@ while running:
                 if event.ui_element == game_btn:
                     pause = True
                     game = False
+                if event.ui_element == pause_btn3:
+                    pause = False
+                    game = False
+                    menu = True
+                if event.ui_element == menu_btn1:
+                    level_1()
+                    pause = False
+                    game = True
+                    menu = False
         if game:
             game_manager.process_events(event)
         if pause:
             pause_manager.process_events(event)
+        if menu:
+            menu_manager.process_events(event)
 
     if game:
         keys = pygame.key.get_pressed()
@@ -233,6 +256,11 @@ while running:
         screen.blit(pause_background, (300, 100))
         pause_manager.update(time_delta)
         pause_manager.draw_ui(screen)
+    if menu:
+        screen.blit(menu_background, (0, 0))
+        menu_manager.update(time_delta)
+        menu_manager.draw_ui(screen)
+
     pygame.display.flip()
 
 pygame.quit()
