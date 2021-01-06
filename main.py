@@ -25,13 +25,14 @@ def load_image(name, colorkey=None):
 
 
 def level_1():
-    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char
+    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, score
     all_sprites = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
     char = Character(10, 225)
+    score = 0
 
     Border(100, 50, 700, 50, 'top')
     Border(700, 50, 700, 200, 'right')
@@ -46,12 +47,16 @@ def level_1():
     Border(100, 50, 100, 200, 'left')
     Border(0, 300, 100, 300, 'bottom')
 
+    Coin(200, 55)
+    Coin(550, 55)
+    Coin(375, 55)
+    Coin(200, 410)
+    Coin(550, 410)
+    Coin(375, 410)
+
     Ball(200, 200, 0, 1.2)
     Ball(550, 200, 0, 1.2)
     Ball(375, 200, 0, -1.2)
-
-    Coin(10, 500, 200)
-    Coin(10, 550, 250)
 
 
 class Finish(pygame.sprite.Sprite):
@@ -81,13 +86,15 @@ class Ball(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.vx = -self.vx
         if pygame.sprite.collide_mask(self, char):
-            level_1()
+            global gameover, game
+            gameover = True
+            game = False
 
 
 class Coin(pygame.sprite.Sprite):
-    image = load_image("Coin 64-64.png", -1)
+    image = load_image("Coin 64-64 1.png", -1)
 
-    def __init__(self, points, x, y):
+    def __init__(self, x, y, points=10):
         super().__init__(all_sprites)
         self.points = points
         self.image = Coin.image
@@ -154,20 +161,47 @@ class Border(pygame.sprite.Sprite):
 menu_manager = pygame_gui.UIManager(size)  # менеджер для ГИ в главном меню
 game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
 pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время паузы
+gameover_manager = pygame_gui.UIManager(size)  # менеджер для ГИ проигрыша
+win_manager = pygame_gui.UIManager(size)  # менеджер для ГИ победа
 
-pause_background = pygame.Surface((200, 250))
-pause_background.fill(pygame.Color('grey'))
+small_background = pygame.Surface((200, 250))  # бг для паузы, победы и проигрыша
+small_background.fill(pygame.Color(220, 220, 220))
 
 menu_background = pygame.Surface(size)
-menu_background.fill(pygame.Color('grey'))
+menu_background.fill(pygame.Color(220, 220, 220))
 
+gameover_btn1 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 200), (100, 20)),
+    text='Restart',
+    manager=gameover_manager
+)
+gameover_btn2 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 250), (100, 20)),
+    text='Main menu',
+    manager=gameover_manager
+)
+win_btn1 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 220), (100, 20)),
+    text='Next level',
+    manager=win_manager
+)
+win_btn2 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 220), (100, 20)),
+    text='Restart',
+    manager=win_manager
+)
+win_btn3 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 250), (100, 20)),
+    text='Main menu',
+    manager=win_manager
+)
 menu_btn1 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 190), (100, 20)),
     text='1 level',
     manager=menu_manager
 )
 game_btn = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((5, 5), (20, 20)),
+    relative_rect=pygame.Rect((10, 10), (25, 25)),
     text='||',
     manager=game_manager
 )
@@ -192,16 +226,18 @@ horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
 balls_group = pygame.sprite.Group()
 coins_group = pygame.sprite.Group()
-char = Character(10, 225)
-
+char = Character(0, 0)
+# финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика)
 score = 0
 balance = 0
-fps = 330
-clock = pygame.time.Clock()
-running = True
 pause = False
 game = False
 menu = True
+gameover = False
+win = False
+fps = 330
+clock = pygame.time.Clock()
+running = True
 while running:
     screen.fill('white')
     time_delta = clock.tick(fps)
@@ -224,7 +260,6 @@ while running:
                     game = True
                 if event.ui_element == pause_btn2:
                     level_1()
-                    score = 0
                     pause = False
                     game = True
                 if event.ui_element == game_btn:
@@ -232,20 +267,28 @@ while running:
                     game = False
                 if event.ui_element == pause_btn3:
                     pause = False
-                    game = False
                     menu = True
                 if event.ui_element == menu_btn1:
                     level_1()
-                    score = 0
-                    pause = False
                     game = True
                     menu = False
+                if event.ui_element == gameover_btn1:
+                    level_1()
+                    game = True
+                    gameover = False
+                if event.ui_element == gameover_btn2:
+                    gameover = False
+                    menu = True
         if game:
             game_manager.process_events(event)
         if pause:
             pause_manager.process_events(event)
         if menu:
             menu_manager.process_events(event)
+        if gameover:
+            gameover_manager.process_events(event)
+        if win:
+            win_manager.process_events(event)
 
     if game:
         keys = pygame.key.get_pressed()
@@ -263,13 +306,21 @@ while running:
     all_sprites.draw(screen)
 
     if pause:
-        screen.blit(pause_background, (300, 100))
+        screen.blit(small_background, (300, 100))
         pause_manager.update(time_delta)
         pause_manager.draw_ui(screen)
     if menu:
         screen.blit(menu_background, (0, 0))
         menu_manager.update(time_delta)
         menu_manager.draw_ui(screen)
+    if gameover:
+        screen.blit(small_background, (300, 100))
+        gameover_manager.update(time_delta)
+        gameover_manager.draw_ui(screen)
+    if win:
+        screen.blit(small_background, (300, 100))
+        win_manager.update(time_delta)
+        win_manager.draw_ui(screen)
 
     pygame.display.flip()
 
