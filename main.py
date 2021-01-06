@@ -4,7 +4,7 @@ import pygame_gui
 import pygame
 
 pygame.init()
-size = weight, height = (800, 450)
+size = weight, height = (800, 500)
 screen = pygame.display.set_mode(size)
 
 
@@ -31,15 +31,24 @@ def level_1():
     vertical_borders = pygame.sprite.Group()
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
-    char = Character()
+    char = Character(10, 225)
 
-    Border(5, 30, weight - 5, 30, 'top')
-    Border(5, height - 5, weight - 5, height - 5, 'bottom')
-    Border(5, 30, 5, height - 5, 'left')
-    Border(weight - 5, 30, weight - 5, height - 5, 'right')
+    Border(100, 50, 700, 50, 'top')
+    Border(700, 50, 700, 200, 'right')
+    Border(700, 200, 800, 200, 'top')
+    Border(800, 200, 800, 300, 'right')
+    Border(700, 300, 800, 300, 'bottom')
+    Border(700, 300, 700, 450, 'right')
+    Border(100, 450, 700, 450, 'bottom')
+    Border(100, 300, 100, 450, 'left')
+    Border(0, 200, 100, 200, 'top')
+    Border(0, 200, 0, 300, 'left')
+    Border(100, 50, 100, 200, 'left')
+    Border(0, 300, 100, 300, 'bottom')
 
-    Ball(350, 150, 1, 0)
-    Ball(300, 150, 0, 1.2)
+    Ball(200, 200, 0, 1.2)
+    Ball(550, 200, 0, 1.2)
+    Ball(375, 200, 0, -1.2)
 
     Coin(10, 500, 200)
     Coin(10, 550, 250)
@@ -72,8 +81,7 @@ class Ball(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.vx = -self.vx
         if pygame.sprite.collide_mask(self, char):
-            char.x = 10
-            char.y = 35
+            level_1()
 
 
 class Coin(pygame.sprite.Sprite):
@@ -91,18 +99,18 @@ class Coin(pygame.sprite.Sprite):
 
     def update(self):
         if pygame.sprite.collide_mask(self, char):
-
-            global score
+            global score, balance
+            balance += self.points
             score += self.points
             pygame.sprite.spritecollide(char, coins_group, True)
 
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__(all_sprites)
         self.x_size = self.y_size = 50
-        self.x = 10
-        self.y = 35
+        self.x = x
+        self.y = y
         self.color = (220, 220, 255)
         self.image = pygame.Surface((self.x_size, self.y_size))
         self.image.fill(self.color)
@@ -184,10 +192,10 @@ horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
 balls_group = pygame.sprite.Group()
 coins_group = pygame.sprite.Group()
-char = Character()
+char = Character(10, 225)
 
 score = 0
-
+balance = 0
 fps = 330
 clock = pygame.time.Clock()
 running = True
@@ -216,6 +224,7 @@ while running:
                     game = True
                 if event.ui_element == pause_btn2:
                     level_1()
+                    score = 0
                     pause = False
                     game = True
                 if event.ui_element == game_btn:
@@ -227,6 +236,7 @@ while running:
                     menu = True
                 if event.ui_element == menu_btn1:
                     level_1()
+                    score = 0
                     pause = False
                     game = True
                     menu = False
