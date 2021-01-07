@@ -5,7 +5,9 @@ import pygame
 
 pygame.init()
 size = weight, height = (800, 500)
+pygame.display.set_caption("Game. Just game.")
 screen = pygame.display.set_mode(size)
+chosen_square = "blue_square.png"
 
 
 def load_image(name, colorkey=None):
@@ -24,7 +26,7 @@ def load_image(name, colorkey=None):
     return image
 
 
-def draw_heading(mngr):
+def draw_small_background(mngr):
     screen.blit(small_background, (300, 130))
     small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
     font = pygame.font.Font(None, 24)
@@ -37,6 +39,28 @@ def draw_heading(mngr):
     text_x = 100 - text.get_width() // 2
     text_y = 20 - text.get_height() // 2
     small_background.blit(text, (text_x, text_y))
+
+
+def char_custom():
+    global choose_square
+    blue, green, red, yellow, brown = (pygame.sprite.Sprite(), pygame.sprite.Sprite(), pygame.sprite.Sprite(),
+                                       pygame.sprite.Sprite(), pygame.sprite.Sprite())
+    blue.image = load_image("blue_square.png")
+    blue.rect = blue.image.get_rect()
+    blue.rect.x, blue.rect.y = 157, 300
+    green.image = load_image("green_square.png")
+    green.rect = green.image.get_rect()
+    green.rect.x, green.rect.y = 262, 300
+    red.image = load_image("red_square.png")
+    red.rect = red.image.get_rect()
+    red.rect.x, red.rect.y = 368, 300
+    yellow.image = load_image("yellow_square.png")
+    yellow.rect = yellow.image.get_rect()
+    yellow.rect.x, yellow.rect.y = 472, 300
+    brown.image = load_image("brown_square.png")
+    brown.rect = brown.image.get_rect()
+    brown.rect.x, brown.rect.y = 577, 300
+    choose_square.add(blue, green, red, yellow, brown)
 
 
 def level_1():
@@ -77,7 +101,7 @@ def level_1():
 
 
 def level_2():
-    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group, key_group,\
+    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group, key_group, \
         door_group
     all_sprites = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
@@ -209,38 +233,35 @@ class Character(pygame.sprite.Sprite):
     def __init__(self, x, y, sz, coins):
         super().__init__(all_sprites)
         self.size = sz
-        self.x = x
-        self.y = y
         self.coins = coins
         self.collected_coins = 0
         self.key = False
-        self.color = (220, 220, 255)
-        self.image = pygame.Surface((self.size, self.size))
-        self.image.fill(self.color)
-        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
+        self.image = self.image = pygame.transform.scale(load_image(chosen_square), (50, 50))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
 
     def move(self, direction):
         if direction == 'right':
-            self.x += 1
+            self.rect.x += 1
         elif direction == 'left':
-            self.x -= 1
+            self.rect.x -= 1
         elif direction == 'up':
-            self.y -= 1
+            self.rect.y -= 1
         elif direction == 'down':
-            self.y += 1
+            self.rect.y += 1
 
     def update(self):
-        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
         if pygame.sprite.spritecollideany(self, horizontal_borders):
-            self.y += pygame.sprite.spritecollideany(self, horizontal_borders).coeff
+            self.rect.y += pygame.sprite.spritecollideany(self, horizontal_borders).coeff
         if pygame.sprite.spritecollideany(self, vertical_borders):
-            self.x += pygame.sprite.spritecollideany(self, vertical_borders).coeff
+            self.rect.x += pygame.sprite.spritecollideany(self, vertical_borders).coeff
         if pygame.sprite.spritecollideany(self, finish_group) and self.coins == self.collected_coins:
             global win, game
             win = True
             game = False
         if pygame.sprite.spritecollideany(self, door_group) and not self.key:
-            self.x -= 1
+            self.rect.x -= 1
 
 
 class Border(pygame.sprite.Sprite):
@@ -290,12 +311,32 @@ win_btn2 = pygame_gui.elements.UIButton(
     text='Main menu',
     manager=win_manager)
 menu_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 190), (100, 20)),
+    relative_rect=pygame.Rect((350, 100), (100, 20)),
     text='1 level',
     manager=menu_manager)
 menu_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 230), (100, 20)),
+    relative_rect=pygame.Rect((350, 150), (100, 20)),
     text='2 level',
+    manager=menu_manager)
+select_blue_square = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((150, 400), (80, 20)),
+    text='Select',
+    manager=menu_manager)
+select_green_square = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((255, 400), (80, 20)),
+    text='Select',
+    manager=menu_manager)
+select_red_square = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((360, 400), (80, 20)),
+    text='Select',
+    manager=menu_manager)
+select_yellow_square = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((465, 400), (80, 20)),
+    text='Select',
+    manager=menu_manager)
+select_brown_square = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((570, 400), (80, 20)),
+    text='Select',
     manager=menu_manager)
 game_btn = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((10, 10), (25, 25)),
@@ -322,6 +363,8 @@ coins_group = pygame.sprite.Group()
 finish_group = pygame.sprite.Group()
 door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
+choose_square = pygame.sprite.Group()
+char_custom()
 char = Character(0, 0, 0, 0)
 # кастом квадратика, сохранение
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
@@ -408,6 +451,16 @@ while running:
                     win = False
                     pygame.mixer.music.load('data/Menu.mp3')
                     pygame.mixer.music.play(-1)
+                if event.ui_element == select_blue_square:
+                    chosen_square = "blue_square.png"
+                if event.ui_element == select_yellow_square:
+                    chosen_square = "yellow_square.png"
+                if event.ui_element == select_brown_square:
+                    chosen_square = "brown_square.png"
+                if event.ui_element == select_red_square:
+                    chosen_square = "red_square.png"
+                if event.ui_element == select_green_square:
+                    chosen_square = "green_square.png"
         if game:
             game_manager.process_events(event)
         if pause:
@@ -434,19 +487,20 @@ while running:
     game_manager.draw_ui(screen)
     all_sprites.draw(screen)
     if pause:
-        draw_heading(pause_manager)
+        draw_small_background(pause_manager)
         pause_manager.update(time_delta)
         pause_manager.draw_ui(screen)
     if menu:
         screen.blit(menu_background, (0, 0))
+        choose_square.draw(screen)
         menu_manager.update(time_delta)
         menu_manager.draw_ui(screen)
     if gameover:
-        draw_heading(gameover_manager)
+        draw_small_background(gameover_manager)
         gameover_manager.update(time_delta)
         gameover_manager.draw_ui(screen)
     if win:
-        draw_heading(win_manager)
+        draw_small_background(win_manager)
         win_manager.update(time_delta)
         win_manager.draw_ui(screen)
 
