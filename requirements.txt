@@ -1,0 +1,4 @@
+pip
+pygame
+pygame-gui
+setuptools

@@ -367,7 +367,7 @@ choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
-# сохранение, магазинчик, блокировка уровней, 3 уровень, next, курсор
+# 2.сохранение, 6.магазинчик, 4.блокировка уровней, 5.3 уровень, 3.next, 1.restart
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.2)
