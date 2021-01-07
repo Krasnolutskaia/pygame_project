@@ -32,7 +32,7 @@ def level_1():
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
     finish_group = pygame.sprite.Group()
-    Finish(700, 200, 100, 100, 6)
+    Finish(700, 200, 100, 100)
     char = Character(10, 225, 50, 6)
     screen.fill(pygame.Color(155, 255, 220), pygame.Rect(0, 200, 100, 100))
 
@@ -62,11 +62,10 @@ def level_1():
 
 
 class Finish(pygame.sprite.Sprite):
-    def __init__(self, x, y, len_x, len_y, coins):
+    def __init__(self, x, y, len_x, len_y):
         super().__init__(all_sprites)
         self.x = x
         self.y = y
-        self.coins = coins
         self.len_x = len_x
         self.len_y = len_y
         self.color = (200, 255, 200)
@@ -119,7 +118,7 @@ class Coin(pygame.sprite.Sprite):
     def update(self):
         if pygame.sprite.collide_mask(self, char):
             pygame.sprite.spritecollide(char, coins_group, True)
-            char.coins += 1
+            char.collected_coins += 1
             coin_sound.play()
 
 
@@ -130,6 +129,7 @@ class Character(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.coins = coins
+        self.collected_coins = 0
         self.color = (220, 220, 255)
         self.image = pygame.Surface((self.size, self.size))
         self.image.fill(self.color)
@@ -151,8 +151,7 @@ class Character(pygame.sprite.Sprite):
             self.y = int(self.y) + pygame.sprite.spritecollideany(self, horizontal_borders).coeff
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.x = int(self.x) + pygame.sprite.spritecollideany(self, vertical_borders).coeff
-        if pygame.sprite.spritecollideany(self, finish_group) and\
-                self.coins == pygame.sprite.spritecollideany(self, finish_group).coins:
+        if pygame.sprite.spritecollideany(self, finish_group) and self.coins == self.collected_coins:
             global win, game
             win = True
             game = False
@@ -249,6 +248,7 @@ char = Character(0, 0, 0, 0)
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 # финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика), громкость музыки, курсор
 pygame.mixer.music.load('data/Menu.mp3')
+pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play()
 pause = False
 game = False
@@ -289,12 +289,14 @@ while running:
                     pause = False
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
+                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play()
                 if event.ui_element == menu_btn1:
                     level_1()
                     game = True
                     menu = False
                     pygame.mixer.music.load('data/Spider Dance.mp3')
+                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play()
                 if event.ui_element == gameover_btn1:
                     level_1()
@@ -304,6 +306,7 @@ while running:
                     gameover = False
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
+                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play()
                 if event.ui_element == win_btn2:
                     level_1()
@@ -313,6 +316,7 @@ while running:
                     menu = True
                     win = False
                     pygame.mixer.music.load('data/Menu.mp3')
+                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play()
         if game:
             game_manager.process_events(event)
@@ -327,13 +331,13 @@ while running:
 
     if game:
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             char.move('up')
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             char.move('left')
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             char.move('down')
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             char.move('right')
         all_sprites.update()
     game_manager.update(time_delta)
