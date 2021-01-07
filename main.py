@@ -34,7 +34,6 @@ def level_1():
     finish_group = pygame.sprite.Group()
     Finish(700, 200, 100, 100)
     char = Character(10, 225, 50, 6)
-    screen.fill(pygame.Color(155, 255, 220), pygame.Rect(0, 200, 100, 100))
 
     Border(100, 50, 700, 50, 'top')
     Border(700, 50, 700, 200, 'right')
@@ -61,6 +60,74 @@ def level_1():
     Ball(375, 200, 0, -1.2)
 
 
+def level_2():
+    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group, key_group,\
+        door_group
+    all_sprites = pygame.sprite.Group()
+    horizontal_borders = pygame.sprite.Group()
+    vertical_borders = pygame.sprite.Group()
+    balls_group = pygame.sprite.Group()
+    coins_group = pygame.sprite.Group()
+    finish_group = pygame.sprite.Group()
+    Finish(700, 350, 100, 100)
+    LockedDoor(650, 350, 30, 100)
+    Key(590, 215)
+    char = Character(10, 60, 50, 6)
+
+    Border(0, 50, 650, 50, 'top')
+    Border(650, 50, 650, 350, 'right')
+    Border(650, 350, 800, 350, 'top')
+    Border(800, 350, 800, 450, 'right')
+    Border(70, 450, 800, 450, 'bottom')
+    Border(70, 120, 70, 450, 'left')
+    Border(0, 50, 0, 120, 'left')
+    Border(0, 120, 70, 120, 'bottom')
+
+    Coin(70, 130)
+    Coin(70, 220)
+    Coin(70, 310)
+    Coin(375, 130)
+    Coin(375, 220)
+    Coin(375, 310)
+
+    Ball(590, 120, -1, 0)
+    Ball(70, 210, 1, 0)
+    Ball(590, 300, -1, 0)
+
+
+class Key(pygame.sprite.Sprite):
+    image = load_image("Key.jpg", -1)
+
+    def __init__(self, x, y):
+        super().__init__(all_sprites)
+
+        self.image = pygame.transform.scale(Key.image, (50, 25))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x
+        self.rect.y = y
+        self.add(key_group)
+
+    def update(self):
+        if pygame.sprite.collide_mask(self, char):
+            char.key = True
+            pygame.sprite.spritecollide(char, key_group, True)
+
+
+class LockedDoor(pygame.sprite.Sprite):
+    def __init__(self, x, y, len_x, len_y):
+        super().__init__(all_sprites)
+        self.x = x
+        self.y = y
+        self.len_x = len_x
+        self.len_y = len_y
+        self.color = (200, 200, 200)
+        self.image = pygame.Surface((self.len_x, self.len_y))
+        self.image.fill(self.color)
+        self.rect = pygame.Rect(self.x, self.y, self.len_x, self.len_y)
+        self.add(door_group)
+
+
 class Finish(pygame.sprite.Sprite):
     def __init__(self, x, y, len_x, len_y):
         super().__init__(all_sprites)
@@ -81,7 +148,7 @@ class Ball(pygame.sprite.Sprite):
     def __init__(self, x, y, vx, vy):
         super().__init__(all_sprites)
 
-        self.image = pygame.transform.scale(Ball.image, (65, 65))
+        self.image = pygame.transform.scale(Ball.image, (60, 60))
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
@@ -105,9 +172,8 @@ class Ball(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     image = load_image("Coin 64-64 1.png", -1)
 
-    def __init__(self, x, y, points=10):
+    def __init__(self, x, y):
         super().__init__(all_sprites)
-        self.points = points
         self.image = Coin.image
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -130,6 +196,7 @@ class Character(pygame.sprite.Sprite):
         self.y = y
         self.coins = coins
         self.collected_coins = 0
+        self.key = False
         self.color = (220, 220, 255)
         self.image = pygame.Surface((self.size, self.size))
         self.image.fill(self.color)
@@ -148,13 +215,15 @@ class Character(pygame.sprite.Sprite):
     def update(self):
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
         if pygame.sprite.spritecollideany(self, horizontal_borders):
-            self.y = int(self.y) + pygame.sprite.spritecollideany(self, horizontal_borders).coeff
+            self.y += pygame.sprite.spritecollideany(self, horizontal_borders).coeff
         if pygame.sprite.spritecollideany(self, vertical_borders):
-            self.x = int(self.x) + pygame.sprite.spritecollideany(self, vertical_borders).coeff
+            self.x += pygame.sprite.spritecollideany(self, vertical_borders).coeff
         if pygame.sprite.spritecollideany(self, finish_group) and self.coins == self.collected_coins:
             global win, game
             win = True
             game = False
+        if pygame.sprite.spritecollideany(self, door_group) and not self.key:
+            self.x -= 1
 
 
 class Border(pygame.sprite.Sprite):
@@ -190,53 +259,47 @@ menu_background.fill(pygame.Color(220, 220, 220))
 gameover_btn1 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 200), (100, 20)),
     text='Restart',
-    manager=gameover_manager
-)
+    manager=gameover_manager)
 gameover_btn2 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 250), (100, 20)),
     text='Main menu',
-    manager=gameover_manager
-)
+    manager=gameover_manager)
 win_btn1 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 190), (100, 20)),
     text='Next level',
-    manager=win_manager
-)
+    manager=win_manager)
 win_btn2 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 220), (100, 20)),
     text='Restart',
-    manager=win_manager
-)
+    manager=win_manager)
 win_btn3 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 250), (100, 20)),
     text='Main menu',
-    manager=win_manager
-)
+    manager=win_manager)
 menu_btn1 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 190), (100, 20)),
     text='1 level',
-    manager=menu_manager
-)
+    manager=menu_manager)
+menu_btn2 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 230), (100, 20)),
+    text='2 level',
+    manager=menu_manager)
 game_btn = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((10, 10), (25, 25)),
     text='||',
-    manager=game_manager
-)
+    manager=game_manager)
 pause_btn1 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 190), (100, 20)),
     text='Continue',
-    manager=pause_manager
-)
+    manager=pause_manager)
 pause_btn2 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 220), (100, 20)),
     text='Restart',
-    manager=pause_manager
-)
+    manager=pause_manager)
 pause_btn3 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 250), (100, 20)),
     text='Main menu',
-    manager=pause_manager
-)
+    manager=pause_manager)
 
 all_sprites = pygame.sprite.Group()
 horizontal_borders = pygame.sprite.Group()
@@ -244,12 +307,14 @@ vertical_borders = pygame.sprite.Group()
 balls_group = pygame.sprite.Group()
 coins_group = pygame.sprite.Group()
 finish_group = pygame.sprite.Group()
+door_group = pygame.sprite.Group()
+key_group = pygame.sprite.Group()
 char = Character(0, 0, 0, 0)
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
-# финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика), громкость музыки, курсор
+# проигрыш, выигрыш, пару уровней, (кастом квадратика), громкость музыки, курсор
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.1)
-pygame.mixer.music.play()
+pygame.mixer.music.play(-1)
 pause = False
 game = False
 menu = True
@@ -290,14 +355,21 @@ while running:
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
                     pygame.mixer.music.set_volume(0.1)
-                    pygame.mixer.music.play()
+                    pygame.mixer.music.play(-1)
                 if event.ui_element == menu_btn1:
                     level_1()
                     game = True
                     menu = False
                     pygame.mixer.music.load('data/Spider Dance.mp3')
                     pygame.mixer.music.set_volume(0.1)
-                    pygame.mixer.music.play()
+                    pygame.mixer.music.play(-1)
+                if event.ui_element == menu_btn2:
+                    level_2()
+                    game = True
+                    menu = False
+                    pygame.mixer.music.load('data/Spider Dance.mp3')
+                    pygame.mixer.music.set_volume(0.1)
+                    pygame.mixer.music.play(-1)
                 if event.ui_element == gameover_btn1:
                     level_1()
                     game = True
@@ -307,7 +379,7 @@ while running:
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
                     pygame.mixer.music.set_volume(0.1)
-                    pygame.mixer.music.play()
+                    pygame.mixer.music.play(-1)
                 if event.ui_element == win_btn2:
                     level_1()
                     win = False
@@ -317,7 +389,7 @@ while running:
                     win = False
                     pygame.mixer.music.load('data/Menu.mp3')
                     pygame.mixer.music.set_volume(0.1)
-                    pygame.mixer.music.play()
+                    pygame.mixer.music.play(-1)
         if game:
             game_manager.process_events(event)
         if pause:
