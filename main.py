@@ -24,14 +24,30 @@ def load_image(name, colorkey=None):
     return image
 
 
+def draw_heading(mngr):
+    screen.blit(small_background, (300, 100))
+    small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
+    font = pygame.font.Font(None, 24)
+    if mngr == pause_manager:
+        text = font.render("Pause", True, (150, 150, 255))
+    if mngr == gameover_manager:
+        text = font.render("Try again!", True, (255, 100, 100))
+    if mngr == win_manager:
+        text = font.render("Congrats! You win!", True, (150, 255, 150))
+    text_x = 100 - text.get_width() // 2
+    text_y = 20 - text.get_height() // 2
+    small_background.blit(text, (text_x, text_y))
+
+
 def level_1():
-    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group
+    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group, door_group
     all_sprites = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
     finish_group = pygame.sprite.Group()
+    door_group = pygame.sprite.Group()
     Finish(700, 200, 100, 100)
     char = Character(10, 225, 50, 6)
 
@@ -69,6 +85,7 @@ def level_2():
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
     finish_group = pygame.sprite.Group()
+    door_group = pygame.sprite.Group()
     Finish(700, 350, 100, 100)
     LockedDoor(650, 350, 30, 100)
     Key(590, 215)
@@ -310,7 +327,7 @@ finish_group = pygame.sprite.Group()
 door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 char = Character(0, 0, 0, 0)
-# проигрыш, выигрыш, (кастом квадратика), громкость музыки, курсор
+# проигрыш, выигрыш, (кастом квадратика)
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.2)
@@ -421,7 +438,7 @@ while running:
     game_manager.draw_ui(screen)
     all_sprites.draw(screen)
     if pause:
-        screen.blit(small_background, (300, 100))
+        draw_heading(pause_manager)
         pause_manager.update(time_delta)
         pause_manager.draw_ui(screen)
     if menu:
@@ -429,11 +446,11 @@ while running:
         menu_manager.update(time_delta)
         menu_manager.draw_ui(screen)
     if gameover:
-        screen.blit(small_background, (300, 100))
+        draw_heading(gameover_manager)
         gameover_manager.update(time_delta)
         gameover_manager.draw_ui(screen)
     if win:
-        screen.blit(small_background, (300, 100))
+        draw_heading(win_manager)
         win_manager.update(time_delta)
         win_manager.draw_ui(screen)
 
