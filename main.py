@@ -25,14 +25,16 @@ def load_image(name, colorkey=None):
 
 
 def level_1():
-    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, score
+    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group
     all_sprites = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
-    char = Character(10, 225)
-    score = 0
+    finish_group = pygame.sprite.Group()
+    Finish(700, 200, 100, 100)
+    char = Character(10, 225, 60)
+    screen.fill(pygame.Color(155, 255, 220), pygame.Rect(0, 200, 100, 100))
 
     Border(100, 50, 700, 50, 'top')
     Border(700, 50, 700, 200, 'right')
@@ -62,6 +64,15 @@ def level_1():
 class Finish(pygame.sprite.Sprite):
     def __init__(self, x, y, len_x, len_y):
         super().__init__(all_sprites)
+        self.x = x
+        self.y = y
+        self.len_x = len_x
+        self.len_y = len_y
+        self.color = (200, 255, 200)
+        self.image = pygame.Surface((self.len_x, self.len_y))
+        self.image.fill(self.color)
+        self.rect = pygame.Rect(self.x, self.y, self.len_x, self.len_y)
+        self.add(finish_group)
 
 
 class Ball(pygame.sprite.Sprite):
@@ -106,22 +117,19 @@ class Coin(pygame.sprite.Sprite):
 
     def update(self):
         if pygame.sprite.collide_mask(self, char):
-            global score, balance
-            balance += self.points
-            score += self.points
             pygame.sprite.spritecollide(char, coins_group, True)
 
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, sz):
         super().__init__(all_sprites)
-        self.x_size = self.y_size = 50
+        self.size = sz
         self.x = x
         self.y = y
         self.color = (220, 220, 255)
-        self.image = pygame.Surface((self.x_size, self.y_size))
+        self.image = pygame.Surface((self.size, self.size))
         self.image.fill(self.color)
-        self.rect = pygame.Rect(self.x, self.y, self.x_size, self.y_size)
+        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
     def move(self, direction):
         if direction == 'right':
@@ -134,11 +142,15 @@ class Character(pygame.sprite.Sprite):
             self.y += 1
 
     def update(self):
-        self.rect = pygame.Rect(self.x, self.y, self.x_size, self.y_size)
+        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
         if pygame.sprite.spritecollideany(self, horizontal_borders):
             self.y = int(self.y) + pygame.sprite.spritecollideany(self, horizontal_borders).coeff
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.x = int(self.x) + pygame.sprite.spritecollideany(self, vertical_borders).coeff
+        if pygame.sprite.spritecollideany(self, finish_group):
+            global win, game
+            win = True
+            game = False
 
 
 class Border(pygame.sprite.Sprite):
@@ -162,7 +174,7 @@ menu_manager = pygame_gui.UIManager(size)  # менеджер для ГИ в г�
 game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
 pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время паузы
 gameover_manager = pygame_gui.UIManager(size)  # менеджер для ГИ проигрыша
-win_manager = pygame_gui.UIManager(size)  # менеджер для ГИ победа
+win_manager = pygame_gui.UIManager(size)  # менеджер для ГИ победы
 
 small_background = pygame.Surface((200, 250))  # бг для паузы, победы и проигрыша
 small_background.fill(pygame.Color(220, 220, 220))
@@ -181,7 +193,7 @@ gameover_btn2 = pygame_gui.elements.UIButton(
     manager=gameover_manager
 )
 win_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 220), (100, 20)),
+    relative_rect=pygame.Rect((350, 190), (100, 20)),
     text='Next level',
     manager=win_manager
 )
@@ -226,10 +238,9 @@ horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
 balls_group = pygame.sprite.Group()
 coins_group = pygame.sprite.Group()
-char = Character(0, 0)
-# финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика)
-score = 0
-balance = 0
+finish_group = pygame.sprite.Group()
+char = Character(0, 0, 50)
+# финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика), музычка, громкость музыки, курсор
 pause = False
 game = False
 menu = True
@@ -279,6 +290,13 @@ while running:
                 if event.ui_element == gameover_btn2:
                     gameover = False
                     menu = True
+                if event.ui_element == win_btn2:
+                    level_1()
+                    win = False
+                    game = True
+                if event.ui_element == win_btn3:
+                    menu = True
+                    win = False
         if game:
             game_manager.process_events(event)
         if pause:
