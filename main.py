@@ -32,8 +32,8 @@ def level_1():
     balls_group = pygame.sprite.Group()
     coins_group = pygame.sprite.Group()
     finish_group = pygame.sprite.Group()
-    Finish(700, 200, 100, 100)
-    char = Character(10, 225, 60)
+    Finish(700, 200, 100, 100, 6)
+    char = Character(10, 225, 50, 6)
     screen.fill(pygame.Color(155, 255, 220), pygame.Rect(0, 200, 100, 100))
 
     Border(100, 50, 700, 50, 'top')
@@ -62,10 +62,11 @@ def level_1():
 
 
 class Finish(pygame.sprite.Sprite):
-    def __init__(self, x, y, len_x, len_y):
+    def __init__(self, x, y, len_x, len_y, coins):
         super().__init__(all_sprites)
         self.x = x
         self.y = y
+        self.coins = coins
         self.len_x = len_x
         self.len_y = len_y
         self.color = (200, 255, 200)
@@ -118,14 +119,17 @@ class Coin(pygame.sprite.Sprite):
     def update(self):
         if pygame.sprite.collide_mask(self, char):
             pygame.sprite.spritecollide(char, coins_group, True)
+            char.coins += 1
+            coin_sound.play()
 
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self, x, y, sz):
+    def __init__(self, x, y, sz, coins):
         super().__init__(all_sprites)
         self.size = sz
         self.x = x
         self.y = y
+        self.coins = coins
         self.color = (220, 220, 255)
         self.image = pygame.Surface((self.size, self.size))
         self.image.fill(self.color)
@@ -147,7 +151,8 @@ class Character(pygame.sprite.Sprite):
             self.y = int(self.y) + pygame.sprite.spritecollideany(self, horizontal_borders).coeff
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.x = int(self.x) + pygame.sprite.spritecollideany(self, vertical_borders).coeff
-        if pygame.sprite.spritecollideany(self, finish_group):
+        if pygame.sprite.spritecollideany(self, finish_group) and\
+                self.coins == pygame.sprite.spritecollideany(self, finish_group).coins:
             global win, game
             win = True
             game = False
@@ -178,6 +183,7 @@ win_manager = pygame_gui.UIManager(size)  # менеджер для ГИ поб�
 
 small_background = pygame.Surface((200, 250))  # бг для паузы, победы и проигрыша
 small_background.fill(pygame.Color(220, 220, 220))
+small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
 
 menu_background = pygame.Surface(size)
 menu_background.fill(pygame.Color(220, 220, 220))
@@ -239,8 +245,11 @@ vertical_borders = pygame.sprite.Group()
 balls_group = pygame.sprite.Group()
 coins_group = pygame.sprite.Group()
 finish_group = pygame.sprite.Group()
-char = Character(0, 0, 50)
-# финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика), музычка, громкость музыки, курсор
+char = Character(0, 0, 0, 0)
+coin_sound = pygame.mixer.Sound('data/Coin.mp3')
+# финиш, проигрыш, выигрыш, пару уровней, (кастом квадратика), громкость музыки, курсор
+pygame.mixer.music.load('data/Menu.mp3')
+pygame.mixer.music.play()
 pause = False
 game = False
 menu = True
@@ -279,10 +288,14 @@ while running:
                 if event.ui_element == pause_btn3:
                     pause = False
                     menu = True
+                    pygame.mixer.music.load('data/Menu.mp3')
+                    pygame.mixer.music.play()
                 if event.ui_element == menu_btn1:
                     level_1()
                     game = True
                     menu = False
+                    pygame.mixer.music.load('data/Spider Dance.mp3')
+                    pygame.mixer.music.play()
                 if event.ui_element == gameover_btn1:
                     level_1()
                     game = True
@@ -290,6 +303,8 @@ while running:
                 if event.ui_element == gameover_btn2:
                     gameover = False
                     menu = True
+                    pygame.mixer.music.load('data/Menu.mp3')
+                    pygame.mixer.music.play()
                 if event.ui_element == win_btn2:
                     level_1()
                     win = False
@@ -297,6 +312,8 @@ while running:
                 if event.ui_element == win_btn3:
                     menu = True
                     win = False
+                    pygame.mixer.music.load('data/Menu.mp3')
+                    pygame.mixer.music.play()
         if game:
             game_manager.process_events(event)
         if pause:
