@@ -310,11 +310,13 @@ finish_group = pygame.sprite.Group()
 door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 char = Character(0, 0, 0, 0)
+# проигрыш, выигрыш, (кастом квадратика), громкость музыки, курсор
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
-# проигрыш, выигрыш, пару уровней, (кастом квадратика), громкость музыки, курсор
 pygame.mixer.music.load('data/Menu.mp3')
-pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
+
+mute = False
 pause = False
 game = False
 menu = True
@@ -337,6 +339,14 @@ while running:
             elif event.key == pygame.K_ESCAPE and pause:
                 pause = False
                 game = True
+            elif event.key == pygame.K_m and not mute:
+                coin_sound.set_volume(0)
+                pygame.mixer.music.set_volume(0)
+                mute = True
+            elif event.key == pygame.K_m and mute:
+                coin_sound.set_volume(1)
+                pygame.mixer.music.set_volume(0.2)
+                mute = False
 
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
@@ -354,21 +364,18 @@ while running:
                     pause = False
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
-                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play(-1)
                 if event.ui_element == menu_btn1:
                     level_1()
                     game = True
                     menu = False
                     pygame.mixer.music.load('data/Spider Dance.mp3')
-                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play(-1)
                 if event.ui_element == menu_btn2:
                     level_2()
                     game = True
                     menu = False
                     pygame.mixer.music.load('data/Spider Dance.mp3')
-                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play(-1)
                 if event.ui_element == gameover_btn1:
                     level_1()
@@ -378,7 +385,6 @@ while running:
                     gameover = False
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
-                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play(-1)
                 if event.ui_element == win_btn2:
                     level_1()
@@ -388,7 +394,6 @@ while running:
                     menu = True
                     win = False
                     pygame.mixer.music.load('data/Menu.mp3')
-                    pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play(-1)
         if game:
             game_manager.process_events(event)
@@ -415,7 +420,6 @@ while running:
     game_manager.update(time_delta)
     game_manager.draw_ui(screen)
     all_sprites.draw(screen)
-
     if pause:
         screen.blit(small_background, (300, 100))
         pause_manager.update(time_delta)
