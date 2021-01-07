@@ -25,7 +25,7 @@ def load_image(name, colorkey=None):
 
 
 def draw_heading(mngr):
-    screen.blit(small_background, (300, 100))
+    screen.blit(small_background, (300, 130))
     small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
     font = pygame.font.Font(None, 24)
     if mngr == pause_manager:
@@ -266,7 +266,7 @@ pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во 
 gameover_manager = pygame_gui.UIManager(size)  # менеджер для ГИ проигрыша
 win_manager = pygame_gui.UIManager(size)  # менеджер для ГИ победы
 
-small_background = pygame.Surface((200, 250))  # бг для паузы, победы и проигрыша
+small_background = pygame.Surface((200, 150))  # бг для паузы, победы и проигрыша
 small_background.fill(pygame.Color(220, 220, 220))
 small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
 
@@ -274,23 +274,19 @@ menu_background = pygame.Surface(size)
 menu_background.fill(pygame.Color(220, 220, 220))
 
 gameover_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 200), (100, 20)),
+    relative_rect=pygame.Rect((350, 195), (100, 20)),
     text='Restart',
     manager=gameover_manager)
 gameover_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 250), (100, 20)),
+    relative_rect=pygame.Rect((350, 230), (100, 20)),
     text='Main menu',
     manager=gameover_manager)
 win_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 190), (100, 20)),
-    text='Next level',
-    manager=win_manager)
-win_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 220), (100, 20)),
+    relative_rect=pygame.Rect((350, 195), (100, 20)),
     text='Restart',
     manager=win_manager)
-win_btn3 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 250), (100, 20)),
+win_btn2 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 230), (100, 20)),
     text='Main menu',
     manager=win_manager)
 menu_btn1 = pygame_gui.elements.UIButton(
@@ -306,15 +302,15 @@ game_btn = pygame_gui.elements.UIButton(
     text='||',
     manager=game_manager)
 pause_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 190), (100, 20)),
+    relative_rect=pygame.Rect((350, 185), (100, 20)),
     text='Continue',
     manager=pause_manager)
 pause_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 220), (100, 20)),
+    relative_rect=pygame.Rect((350, 213), (100, 20)),
     text='Restart',
     manager=pause_manager)
 pause_btn3 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 250), (100, 20)),
+    relative_rect=pygame.Rect((350, 240), (100, 20)),
     text='Main menu',
     manager=pause_manager)
 
@@ -327,7 +323,7 @@ finish_group = pygame.sprite.Group()
 door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 char = Character(0, 0, 0, 0)
-# проигрыш, выигрыш, (кастом квадратика)
+# кастом квадратика, сохранение
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.2)
@@ -403,11 +399,11 @@ while running:
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
                     pygame.mixer.music.play(-1)
-                if event.ui_element == win_btn2:
+                if event.ui_element == win_btn1:
                     level_1()
                     win = False
                     game = True
-                if event.ui_element == win_btn3:
+                if event.ui_element == win_btn2:
                     menu = True
                     win = False
                     pygame.mixer.music.load('data/Menu.mp3')
