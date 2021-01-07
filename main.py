@@ -236,7 +236,7 @@ class Character(pygame.sprite.Sprite):
         self.coins = coins
         self.collected_coins = 0
         self.key = False
-        self.image = self.image = pygame.transform.scale(load_image(chosen_square), (50, 50))
+        self.image = pygame.transform.scale(load_image(chosen_square), (50, 50))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -364,13 +364,19 @@ finish_group = pygame.sprite.Group()
 door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 choose_square = pygame.sprite.Group()
+cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
-# кастом квадратика, сохранение
+# сохранение, магазинчик, блокировка уровней, 3 уровень, next, курсор
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
+
+cursor = pygame.sprite.Sprite()
+cursor.image = pygame.transform.scale(load_image("cursor1.png"), (50, 50))
+cursor.rect = cursor.image.get_rect()
+cursor_group.add(cursor)
 
 mute = False
 pause = False
@@ -389,10 +395,10 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE and not pause:
+            if event.key == pygame.K_ESCAPE and not pause and game:
                 pause = True
                 game = False
-            elif event.key == pygame.K_ESCAPE and pause:
+            elif event.key == pygame.K_ESCAPE and pause and not game:
                 pause = False
                 game = True
             elif event.key == pygame.K_m and not mute:
@@ -503,6 +509,10 @@ while running:
         draw_small_background(win_manager)
         win_manager.update(time_delta)
         win_manager.draw_ui(screen)
+    if pygame.mouse.get_focused():
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        pygame.mouse.set_visible(False)
+        cursor_group.draw(screen)
 
     pygame.display.flip()
 
