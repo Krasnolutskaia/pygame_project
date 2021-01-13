@@ -2,6 +2,7 @@ import os
 import sys
 import pygame_gui
 import pygame
+import pickle
 
 pygame.init()
 size = weight, height = (800, 500)
@@ -56,6 +57,7 @@ def draw_balance():
 
 
 def char_custom():
+    menu_background.fill((200, 200, 200))
     global choose_square, squares
     blue, green, red, yellow, brown, coin1, coin2, coin3, coin4 = (pygame.sprite.Sprite(), pygame.sprite.Sprite(),
                                                                    pygame.sprite.Sprite(), pygame.sprite.Sprite(),
@@ -436,7 +438,7 @@ choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
-# 1.сохранение, 2.магазинчик
+
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 gameover_sound = pygame.mixer.Sound('data/death.mp3')
 win_sound = pygame.mixer.Sound('data/win.mp3')
@@ -486,7 +488,24 @@ while running:
                 gameover_sound.set_volume(1)
                 pygame.mixer.music.set_volume(0.2)
                 mute = False
-
+            elif event.key == pygame.K_s and event.mod & pygame.KMOD_CTRL:
+                with open("data/save.dat", 'wb') as file:
+                    pickle.dump((chosen_square, squares, balance), file)
+            elif event.key == pygame.K_l and event.mod & pygame.KMOD_CTRL:
+                with open("data/save.dat", 'rb') as file:
+                    unpickler = pickle.Unpickler(file)
+                    chosen_square, squares, balance = unpickler.load()
+                char_custom()
+                if chosen_square == 'blue_square.png':
+                    select_blue_square.set_text('Selected')
+                elif chosen_square == 'green_square.png':
+                    select_green_square.set_text('Selected')
+                elif chosen_square == 'yellow_square.png':
+                    select_yellow_square.set_text('Selected')
+                elif chosen_square == 'red_square.png':
+                    select_red_square.set_text('Selected')
+                else:
+                    select_brown_square.set_text('Selected')
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == pause_btn1:
