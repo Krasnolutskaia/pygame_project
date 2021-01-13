@@ -215,6 +215,7 @@ class Ball(pygame.sprite.Sprite):
             global gameover, game
             gameover = True
             game = False
+            gameover_sound.play()
 
 
 class Coin(pygame.sprite.Sprite):
@@ -267,6 +268,7 @@ class Character(pygame.sprite.Sprite):
             global win, game
             win = True
             game = False
+            win_sound.play()
         if pygame.sprite.spritecollideany(self, door_group) and not self.key:
             self.rect.x -= 1
 
@@ -378,8 +380,10 @@ choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
-# 2.сохранение, 5.магазинчик, 4.звук при проигрыше, 3.next, 1.restart
+# 2.сохранение, 3.магазинчик, 1.звук при проигрыше
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
+gameover_sound = pygame.mixer.Sound('data/death.mp3')
+win_sound = pygame.mixer.Sound('data/win.mp3')
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
