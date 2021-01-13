@@ -50,12 +50,6 @@ def draw_small_background(mngr):
     small_background.blit(text, (text_x, text_y))
 
 
-def draw_balance():
-    font = pygame.font.Font(None, 26)
-    text = font.render("Balance:     " + str(balance), True, (20, 20, 20))
-    screen.blit(text, (650, 10))
-
-
 def char_custom():
     menu_background.fill((200, 200, 200))
     global choose_square, squares
@@ -439,6 +433,7 @@ cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
 
+font = pygame.font.Font(None, 26)
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 gameover_sound = pygame.mixer.Sound('data/death.mp3')
 win_sound = pygame.mixer.Sound('data/win.mp3')
@@ -633,7 +628,8 @@ while running:
         cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
         pygame.mouse.set_visible(False)
         cursor_group.draw(screen)
-    draw_balance()
+    text = font.render(str(balance), True, (20, 20, 20))
+    screen.blit(text, (750, 10))
     pygame.display.flip()
 
 pygame.quit()
