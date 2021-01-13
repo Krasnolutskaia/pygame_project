@@ -8,6 +8,7 @@ size = weight, height = (800, 500)
 pygame.display.set_caption("Game. Just game.")
 screen = pygame.display.set_mode(size)
 chosen_square = "blue_square.png"
+squares = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square']]
 
 
 def load_image(name, colorkey=None):
@@ -48,10 +49,19 @@ def draw_small_background(mngr):
     small_background.blit(text, (text_x, text_y))
 
 
+def draw_balance():
+    font = pygame.font.Font(None, 26)
+    text = font.render("Balance:     " + str(balance), True, (20, 20, 20))
+    screen.blit(text, (650, 10))
+
+
 def char_custom():
-    global choose_square
-    blue, green, red, yellow, brown = (pygame.sprite.Sprite(), pygame.sprite.Sprite(), pygame.sprite.Sprite(),
-                                       pygame.sprite.Sprite(), pygame.sprite.Sprite())
+    global choose_square, squares
+    blue, green, red, yellow, brown, coin1, coin2, coin3, coin4 = (pygame.sprite.Sprite(), pygame.sprite.Sprite(),
+                                                                   pygame.sprite.Sprite(), pygame.sprite.Sprite(),
+                                                                   pygame.sprite.Sprite(), pygame.sprite.Sprite(),
+                                                                   pygame.sprite.Sprite(), pygame.sprite.Sprite(),
+                                                                   pygame.sprite.Sprite())
     blue.image = load_image("blue_square.png")
     blue.rect = blue.image.get_rect()
     blue.rect.x, blue.rect.y = 157, 300
@@ -67,7 +77,48 @@ def char_custom():
     brown.image = load_image("brown_square.png")
     brown.rect = brown.image.get_rect()
     brown.rect.x, brown.rect.y = 577, 300
-    choose_square.add(blue, green, red, yellow, brown)
+    coin1.image = pygame.transform.scale(load_image('Coin 64-64 1.png', -1), (30, 30))
+    coin1.rect = coin1.image.get_rect()
+    coin1.rect.x, coin1.rect.y = 719, 3
+    coin2.image = pygame.transform.scale(load_image('Coin 64-64 1.png', -1), (30, 30))
+    coin2.rect = coin2.image.get_rect()
+    coin2.rect.x, coin2.rect.y = 364, 368
+    coin3.image = pygame.transform.scale(load_image('Coin 64-64 1.png', -1), (30, 30))
+    coin3.rect = coin3.image.get_rect()
+    coin3.rect.x, coin3.rect.y = 469, 368
+    coin4.image = pygame.transform.scale(load_image('Coin 64-64 1.png', -1), (30, 30))
+    coin4.rect = coin4.image.get_rect()
+    coin4.rect.x, coin4.rect.y = 574, 368
+    font = pygame.font.Font(None, 22)
+    text = font.render(str(squares[0][0]), True, (20, 20, 20))
+    menu_background.blit(text, (392, 378))
+    text = font.render(str(squares[1][0]), True, (20, 20, 20))
+    menu_background.blit(text, (497, 378))
+    text = font.render(str(squares[2][0]), True, (20, 20, 20))
+    menu_background.blit(text, (602, 378))
+    choose_square.add(blue, green, red, yellow, brown, coin1, coin2, coin3, coin4)
+
+
+def buy(n):
+    global squares, balance, chosen_square
+    if squares[n][1]:
+        chosen_square = squares[n][2]
+    elif balance >= squares[n][0]:
+        all_unselect()
+        balance -= squares[n][0]
+        squares[n][1] = True
+        squares[n][0] = 0
+        chosen_square = squares[n][2]
+        menu_background.fill(pygame.Color(220, 220, 220))
+        char_custom()
+
+
+def all_unselect():
+    select_blue_square.set_text('Select')
+    select_green_square.set_text('Select')
+    select_yellow_square.set_text('Select')
+    select_brown_square.set_text('Select')
+    select_red_square.set_text('Select')
 
 
 def level_1():
@@ -95,12 +146,13 @@ def level_1():
     Border(100, 50, 100, 200, 'left')
     Border(0, 300, 100, 300, 'bottom')
 
-    Coin(200, 55)
-    Coin(550, 55)
-    Coin(375, 55)
-    Coin(200, 410)
-    Coin(550, 410)
-    Coin(375, 410)
+    Coin(200, 55, 10)
+    Coin(550, 55, 10)
+    Coin(375, 55, 10)
+    Coin(200, 410, 10)
+    Coin(550, 410, 10)
+    Coin(375, 410, 10)
+    Coin(719, 3, 0, size=30)
 
     Ball(200, 200, 0, 1.2)
     Ball(550, 200, 0, 1.2)
@@ -131,12 +183,13 @@ def level_2():
     Border(0, 50, 0, 120, 'left')
     Border(0, 120, 70, 120, 'bottom')
 
-    Coin(70, 130)
-    Coin(70, 220)
-    Coin(70, 310)
-    Coin(375, 130)
-    Coin(375, 220)
-    Coin(375, 310)
+    Coin(70, 130, 20)
+    Coin(70, 220, 20)
+    Coin(70, 310, 20)
+    Coin(375, 130, 20)
+    Coin(375, 220, 20)
+    Coin(375, 310, 20)
+    Coin(719, 3, 0, size=30)
 
     Ball(590, 120, -1, 0)
     Ball(70, 210, 1, 0)
@@ -221,9 +274,10 @@ class Ball(pygame.sprite.Sprite):
 class Coin(pygame.sprite.Sprite):
     image = load_image("Coin 64-64 1.png", -1)
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, points, size=37):
         super().__init__(all_sprites)
-        self.image = Coin.image
+        self.points = points
+        self.image = pygame.transform.scale(Coin.image, (size, size))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -234,6 +288,8 @@ class Coin(pygame.sprite.Sprite):
         if pygame.sprite.collide_mask(self, char):
             pygame.sprite.spritecollide(char, coins_group, True)
             char.collected_coins += 1
+            global balance
+            balance += self.points
             coin_sound.play()
 
 
@@ -380,7 +436,7 @@ choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
-# 2.сохранение, 3.магазинчик, 1.звук при проигрыше
+# 1.сохранение, 2.магазинчик
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 gameover_sound = pygame.mixer.Sound('data/death.mp3')
 win_sound = pygame.mixer.Sound('data/win.mp3')
@@ -394,6 +450,7 @@ cursor.rect = cursor.image.get_rect()
 cursor_group.add(cursor)
 
 current_level = 0
+balance = 0
 mute = False
 pause = False
 game = False
@@ -419,10 +476,14 @@ while running:
                 game = True
             elif event.key == pygame.K_m and not mute:
                 coin_sound.set_volume(0)
+                win_sound.set_volume(0)
+                gameover_sound.set_volume(0)
                 pygame.mixer.music.set_volume(0)
                 mute = True
             elif event.key == pygame.K_m and mute:
                 coin_sound.set_volume(1)
+                win_sound.set_volume(1)
+                gameover_sound.set_volume(1)
                 pygame.mixer.music.set_volume(0.2)
                 mute = False
 
@@ -486,14 +547,27 @@ while running:
                     pygame.mixer.music.play(-1)
                 if event.ui_element == select_blue_square:
                     chosen_square = "blue_square.png"
-                if event.ui_element == select_yellow_square:
-                    chosen_square = "yellow_square.png"
-                if event.ui_element == select_brown_square:
-                    chosen_square = "brown_square.png"
-                if event.ui_element == select_red_square:
-                    chosen_square = "red_square.png"
+                    all_unselect()
+                    select_blue_square.set_text('Selected')
                 if event.ui_element == select_green_square:
                     chosen_square = "green_square.png"
+                    all_unselect()
+                    select_green_square.set_text('Selected')
+                if event.ui_element == select_red_square:
+                    buy(0)
+                    if squares[0][1]:
+                        all_unselect()
+                        select_red_square.set_text('Selected')
+                if event.ui_element == select_yellow_square:
+                    buy(1)
+                    if squares[1][1]:
+                        all_unselect()
+                        select_yellow_square.set_text('Selected')
+                if event.ui_element == select_brown_square:
+                    buy(2)
+                    if squares[2][1]:
+                        all_unselect()
+                        select_brown_square.set_text('Selected')
         if game:
             game_manager.process_events(event)
         if pause:
@@ -540,7 +614,7 @@ while running:
         cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
         pygame.mouse.set_visible(False)
         cursor_group.draw(screen)
-
+    draw_balance()
     pygame.display.flip()
 
 pygame.quit()
