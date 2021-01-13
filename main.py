@@ -9,7 +9,7 @@ size = weight, height = (800, 500)
 pygame.display.set_caption("Game. Just game.")
 screen = pygame.display.set_mode(size)
 chosen_square = "blue_square.png"
-squares = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square']]
+squares = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
 
 
 def load_image(name, colorkey=None):
@@ -489,7 +489,8 @@ while running:
             elif event.key == pygame.K_l and event.mod & pygame.KMOD_CTRL:
                 with open("data/save.dat", 'rb') as file:
                     unpickler = pickle.Unpickler(file)
-                    chosen_square, squares, balance = unpickler.load()
+                    if len(file.read()) != 0:
+                        chosen_square, squares, balance = unpickler.load()
                 char_custom()
                 if chosen_square == 'blue_square.png':
                     select_blue_square.set_text('Selected')
