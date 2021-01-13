@@ -26,6 +26,13 @@ def load_image(name, colorkey=None):
     return image
 
 
+def check_current_level():
+    if current_level == 1:
+        level_1()
+    if current_level == 2:
+        level_2()
+
+
 def draw_small_background(mngr):
     screen.blit(small_background, (300, 130))
     small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
@@ -302,12 +309,16 @@ gameover_btn2 = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((350, 230), (100, 20)),
     text='Main menu',
     manager=gameover_manager)
+win_btn3 = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((350, 185), (100, 20)),
+    text='Next',
+    manager=win_manager)
 win_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 195), (100, 20)),
+    relative_rect=pygame.Rect((350, 213), (100, 20)),
     text='Restart',
     manager=win_manager)
 win_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 230), (100, 20)),
+    relative_rect=pygame.Rect((350, 240), (100, 20)),
     text='Main menu',
     manager=win_manager)
 menu_btn1 = pygame_gui.elements.UIButton(
@@ -367,7 +378,7 @@ choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 char_custom()
 char = Character(0, 0, 0, 0)
-# 2.сохранение, 6.магазинчик, 4.блокировка уровней, 5.3 уровень, 3.next, 1.restart
+# 2.сохранение, 5.магазинчик, 4.звук при проигрыше, 3.next, 1.restart
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
 pygame.mixer.music.load('data/Menu.mp3')
 pygame.mixer.music.set_volume(0.2)
@@ -378,6 +389,7 @@ cursor.image = pygame.transform.scale(load_image("cursor1.png"), (50, 50))
 cursor.rect = cursor.image.get_rect()
 cursor_group.add(cursor)
 
+current_level = 0
 mute = False
 pause = False
 game = False
@@ -416,9 +428,9 @@ while running:
                     pause = False
                     game = True
                 if event.ui_element == pause_btn2:
-                    level_1()
                     pause = False
                     game = True
+                    check_current_level()
                 if event.ui_element == game_btn:
                     pause = True
                     game = False
@@ -429,29 +441,40 @@ while running:
                     pygame.mixer.music.play(-1)
                 if event.ui_element == menu_btn1:
                     level_1()
+                    current_level = 1
                     game = True
                     menu = False
                     pygame.mixer.music.load('data/Spider Dance.mp3')
                     pygame.mixer.music.play(-1)
                 if event.ui_element == menu_btn2:
                     level_2()
+                    current_level = 2
                     game = True
                     menu = False
                     pygame.mixer.music.load('data/Spider Dance.mp3')
                     pygame.mixer.music.play(-1)
                 if event.ui_element == gameover_btn1:
-                    level_1()
                     game = True
                     gameover = False
+                    check_current_level()
                 if event.ui_element == gameover_btn2:
                     gameover = False
                     menu = True
                     pygame.mixer.music.load('data/Menu.mp3')
                     pygame.mixer.music.play(-1)
-                if event.ui_element == win_btn1:
-                    level_1()
+                if event.ui_element == win_btn3:
+                    if current_level == 1:
+                        level_2()
+                        current_level = 2
+                    elif current_level == 2:
+                        level_1()
+                        current_level = 1
                     win = False
                     game = True
+                if event.ui_element == win_btn1:
+                    win = False
+                    game = True
+                    check_current_level()
                 if event.ui_element == win_btn2:
                     menu = True
                     win = False
