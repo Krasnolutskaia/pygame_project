@@ -5,12 +5,11 @@ import pygame
 import pickle
 
 pygame.init()
-size = weight, height = (800, 500)
+SIZE = WEIGHT, HEIGHT = (800, 500)
 pygame.display.set_caption("Game. Just game.")
-screen = pygame.display.set_mode(size)
+SCREEN = pygame.display.set_mode(SIZE)
+
 FPS = 330
-chosen_square = "blue_square.png"
-squares_in_shop = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
 
 
 def load_image(name, colorkey=None):
@@ -29,10 +28,16 @@ def load_image(name, colorkey=None):
     return image
 
 
-def check_current_level(lvl):
+def remake_level(lvl, next=False):
     if lvl == 1:
+        if next:
+            level_2()
+            return 2
         level_1()
     if lvl == 2:
+        if next:
+            level_1()
+            return 1
         level_2()
 
 
@@ -46,7 +51,7 @@ def draw_small_background(txt, scrn, bg, color):
     bg.blit(txt, (text_x, text_y))
 
 
-def char_custom(bg, group, price):
+def draw_menu(bg, group, price):
     bg.fill((200, 200, 200))
     blue, green, red, yellow, brown, coin1, coin2, coin3, coin4 = (pygame.sprite.Sprite(), pygame.sprite.Sprite(),
                                                                    pygame.sprite.Sprite(), pygame.sprite.Sprite(),
@@ -90,20 +95,20 @@ def char_custom(bg, group, price):
     group.add(blue, green, red, yellow, brown, coin1, coin2, coin3, coin4)
 
 
-def buy_and_choose(n, shop, blnce, chosen_sqr, btn):
-    if blnce >= squares_in_shop[n][0]:
+def buy_and_choose(n, shop, blnc, chosen_sqr, btn):
+    if blnc >= squares_in_shop[n][0]:
         all_unselect()
-        blnce -= squares_in_shop[n][0]
+        blnc -= squares_in_shop[n][0]
         squares_in_shop[n][1] = True
         squares_in_shop[n][0] = 0
         chosen_sqr = squares_in_shop[n][2]
         menu_background.fill(pygame.Color(220, 220, 220))
-        char_custom(menu_background, choose_square, squares_in_shop)
+        draw_menu(menu_background, choose_square, squares_in_shop)
     if squares_in_shop[n][1]:
         chosen_sqr = squares_in_shop[n][2]
         all_unselect()
         btn.set_text('Selected')
-    return shop, blnce, chosen_sqr
+    return shop, blnc, chosen_sqr
 
 
 def all_unselect():
@@ -115,16 +120,16 @@ def all_unselect():
 
 
 def level_1():
-    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group, door_group
-    all_sprites = pygame.sprite.Group()
-    horizontal_borders = pygame.sprite.Group()
-    vertical_borders = pygame.sprite.Group()
-    balls_group = pygame.sprite.Group()
-    coins_group = pygame.sprite.Group()
-    finish_group = pygame.sprite.Group()
-    door_group = pygame.sprite.Group()
+    all_spr = pygame.sprite.Group()
+    hor_borders = pygame.sprite.Group()
+    vert_borders = pygame.sprite.Group()
+    balls_g = pygame.sprite.Group()
+    coins_g = pygame.sprite.Group()
+    finish_g = pygame.sprite.Group()
+    door_g = pygame.sprite.Group()
+    key_g = pygame.sprite.Group()
     Finish(700, 200, 100, 100)
-    char = Character(10, 225, 50, 6)
+    char = Character(10, 225, 50, 6, chosen_square)
 
     Border(100, 50, 700, 50, 'top')
     Border(700, 50, 700, 200, 'right')
@@ -150,22 +155,22 @@ def level_1():
     Ball(200, 200, 0, 1.2)
     Ball(550, 200, 0, 1.2)
     Ball(375, 200, 0, -1.2)
+    return all_spr, hor_borders, vert_borders, balls_g, coins_g, char, finish_g, door_g, key_g
 
 
 def level_2():
-    global all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group, char, finish_group, key_group, \
-        door_group
-    all_sprites = pygame.sprite.Group()
-    horizontal_borders = pygame.sprite.Group()
-    vertical_borders = pygame.sprite.Group()
-    balls_group = pygame.sprite.Group()
-    coins_group = pygame.sprite.Group()
-    finish_group = pygame.sprite.Group()
-    door_group = pygame.sprite.Group()
+    all_spr = pygame.sprite.Group()
+    hor_borders = pygame.sprite.Group()
+    vert_borders = pygame.sprite.Group()
+    balls_g = pygame.sprite.Group()
+    coins_g = pygame.sprite.Group()
+    finish_g = pygame.sprite.Group()
+    door_g = pygame.sprite.Group()
+    key_g = pygame.sprite.Group()
     Finish(700, 350, 100, 100)
     LockedDoor(650, 350, 30, 100)
     Key(590, 215)
-    char = Character(10, 60, 50, 6)
+    char = Character(10, 60, 50, 6, chosen_square)
 
     Border(0, 50, 650, 50, 'top')
     Border(650, 50, 650, 350, 'right')
@@ -187,6 +192,17 @@ def level_2():
     Ball(590, 120, -1, 0)
     Ball(70, 210, 1, 0)
     Ball(590, 300, -1, 0)
+    return all_spr, hor_borders, vert_borders, balls_g, coins_g, char, finish_g, door_g, key_g
+
+
+def hide(btns):
+    for btn in btns:
+        btn.hide()
+
+
+def show(btns):
+    for btn in btns:
+        btn.show()
 
 
 class Key(pygame.sprite.Sprite):
@@ -241,7 +257,6 @@ class Ball(pygame.sprite.Sprite):
 
     def __init__(self, x, y, vx, vy):
         super().__init__(all_sprites)
-
         self.image = pygame.transform.scale(Ball.image, (60, 60))
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
@@ -261,6 +276,7 @@ class Ball(pygame.sprite.Sprite):
             global gameover, game
             gameover = True
             game = False
+            show([restart_btn, main_menu_btn])
             gameover_sound.play()
 
 
@@ -287,13 +303,13 @@ class Coin(pygame.sprite.Sprite):
 
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self, x, y, sz, coins):
+    def __init__(self, x, y, sz, coins, image):
         super().__init__(all_sprites)
         self.size = sz
         self.coins = coins
         self.collected_coins = 0
         self.key = False
-        self.image = pygame.transform.scale(load_image(chosen_square), (50, 50))
+        self.image = pygame.transform.scale(load_image(image), (50, 50))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -317,6 +333,7 @@ class Character(pygame.sprite.Sprite):
             global win, game
             win = True
             game = False
+            show([restart_btn, main_menu_btn, next_btn])
             win_sound.play()
         if pygame.sprite.spritecollideany(self, door_group) and not self.key:
             self.rect.x -= 1
@@ -339,83 +356,43 @@ class Border(pygame.sprite.Sprite):
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
 
-menu_manager = pygame_gui.UIManager(size)  # менеджер для ГИ в главном меню
-game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
-pause_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время паузы
-gameover_manager = pygame_gui.UIManager(size)  # менеджер для ГИ проигрыша
-win_manager = pygame_gui.UIManager(size)  # менеджер для ГИ победы
+chosen_square = "blue_square.png"
+squares_in_shop = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
+
+manager = pygame_gui.UIManager(SIZE)
+restart_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 185), (100, 20)), text='Restart',
+                                           manager=manager)
+main_menu_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 230), (100, 20)), text='Main menu',
+                                             manager=manager)
+next_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 213), (100, 20)), text='Next',
+                                        manager=manager)
+continue_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 208), (100, 20)), text='Continue',
+                                            manager=manager)
+pause_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((10, 10), (22, 22)), text='||',
+                                         manager=manager)
+level_1_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 100), (100, 20)), text='1 level',
+                                           manager=manager)
+level_2_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 150), (100, 20)), text='2 level',
+                                           manager=manager)
+select_blue_square = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((150, 400), (80, 20)), text='Select',
+                                                  manager=manager)
+select_green_square = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((255, 400), (80, 20)), text='Select',
+                                                   manager=manager)
+select_red_square = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((360, 400), (80, 20)), text='Select',
+                                                 manager=manager)
+select_yellow_square = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((465, 400), (80, 20)), text='Select',
+                                                    manager=manager)
+select_brown_square = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((570, 400), (80, 20)), text='Select',
+                                                   manager=manager)
+
+hide([restart_btn, next_btn, main_menu_btn, pause_btn, restart_btn, continue_btn])
 
 small_background = pygame.Surface((200, 150))  # бг для паузы, победы и проигрыша
 small_background.fill(pygame.Color(220, 220, 220))
 small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
 
-menu_background = pygame.Surface(size)
+menu_background = pygame.Surface(SIZE)  # бг для меню
 menu_background.fill(pygame.Color(220, 220, 220))
-
-gameover_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 195), (100, 20)),
-    text='Restart',
-    manager=gameover_manager)
-gameover_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 230), (100, 20)),
-    text='Main menu',
-    manager=gameover_manager)
-win_btn3 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 185), (100, 20)),
-    text='Next',
-    manager=win_manager)
-win_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 213), (100, 20)),
-    text='Restart',
-    manager=win_manager)
-win_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 240), (100, 20)),
-    text='Main menu',
-    manager=win_manager)
-menu_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 100), (100, 20)),
-    text='1 level',
-    manager=menu_manager)
-menu_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 150), (100, 20)),
-    text='2 level',
-    manager=menu_manager)
-select_blue_square = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((150, 400), (80, 20)),
-    text='Select',
-    manager=menu_manager)
-select_green_square = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((255, 400), (80, 20)),
-    text='Select',
-    manager=menu_manager)
-select_red_square = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((360, 400), (80, 20)),
-    text='Select',
-    manager=menu_manager)
-select_yellow_square = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((465, 400), (80, 20)),
-    text='Select',
-    manager=menu_manager)
-select_brown_square = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((570, 400), (80, 20)),
-    text='Select',
-    manager=menu_manager)
-game_btn = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((10, 10), (25, 25)),
-    text='||',
-    manager=game_manager)
-pause_btn1 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 185), (100, 20)),
-    text='Continue',
-    manager=pause_manager)
-pause_btn2 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 213), (100, 20)),
-    text='Restart',
-    manager=pause_manager)
-pause_btn3 = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((350, 240), (100, 20)),
-    text='Main menu',
-    manager=pause_manager)
 
 all_sprites = pygame.sprite.Group()
 horizontal_borders = pygame.sprite.Group()
@@ -427,8 +404,8 @@ door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
-char_custom(menu_background, choose_square, squares_in_shop)
-char = Character(0, 0, 0, 0)
+draw_menu(menu_background, choose_square, squares_in_shop)
+char = Character(0, 0, 0, 0, chosen_square)
 
 font = pygame.font.Font(None, 26)
 coin_sound = pygame.mixer.Sound('data/Coin.mp3')
@@ -454,17 +431,18 @@ win = False
 clock = pygame.time.Clock()
 running = True
 while running:
-    screen.fill('white')
+    SCREEN.fill('white')
     time_delta = clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE and not pause and game:
+                show([continue_btn, restart_btn, main_menu_btn])
                 pause = True
                 game = False
             elif event.key == pygame.K_ESCAPE and pause and not game:
+                hide([continue_btn, restart_btn, main_menu_btn])
                 pause = False
                 game = True
             elif event.key == pygame.K_m and not mute:
@@ -487,7 +465,7 @@ while running:
                     unpickler = pickle.Unpickler(file)
                     if len(file.read()) != 0:
                         chosen_square, squares_in_shop, balance = unpickler.load()
-                char_custom(menu_background, choose_square, squares_in_shop)
+                draw_menu(menu_background, choose_square, squares_in_shop)
                 if chosen_square == 'blue_square.png':
                     select_blue_square.set_text('Selected')
                 elif chosen_square == 'green_square.png':
@@ -500,62 +478,51 @@ while running:
                     select_brown_square.set_text('Selected')
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                if event.ui_element == pause_btn1:
-                    pause = False
+                if event.ui_element == restart_btn:
+                    remake_level(current_level)
+                    hide([restart_btn, next_btn, main_menu_btn, restart_btn, continue_btn])
+                    pause, gameover, win = False, False, False
                     game = True
-                if event.ui_element == pause_btn2:
-                    pause = False
-                    game = True
-                    check_current_level(current_level)
-                if event.ui_element == game_btn:
-                    pause = True
-                    game = False
-                if event.ui_element == pause_btn3:
-                    pause = False
+                if event.ui_element == main_menu_btn:
+                    hide([restart_btn, next_btn, main_menu_btn, pause_btn, restart_btn, continue_btn])
+                    show([level_2_btn, level_1_btn, select_blue_square, select_green_square, select_brown_square,
+                          select_yellow_square, select_red_square])
+                    game, pause, gameover, win = False, False, False, False
                     menu = True
-                    pygame.mixer.music.load('data/Menu.mp3')
-                    pygame.mixer.music.play(-1)
-                if event.ui_element == menu_btn1:
+                if event.ui_element == continue_btn:
+                    hide([continue_btn, restart_btn, main_menu_btn])
+                    game = True
+                    pause = False
+                if event.ui_element == pause_btn:
+                    if pause:
+                        hide([continue_btn, restart_btn, main_menu_btn])
+                        pause = True
+                        game = False
+                    else:
+                        show([continue_btn, restart_btn, main_menu_btn])
+                        pause = True
+                        game = False
+                if event.ui_element == next_btn:
+                    current_level = remake_level(current_level, True)
+                    hide([next_btn, restart_btn, main_menu_btn])
+                    game = True
+                    win = False
+                if event.ui_element == level_1_btn:
                     level_1()
+                    show([pause_btn])
+                    hide([level_2_btn, level_1_btn, select_blue_square, select_green_square, select_brown_square,
+                          select_yellow_square, select_red_square])
                     current_level = 1
-                    game = True
                     menu = False
-                    pygame.mixer.music.load('data/Spider Dance.mp3')
-                    pygame.mixer.music.play(-1)
-                if event.ui_element == menu_btn2:
+                    game = True
+                if event.ui_element == level_2_btn:
                     level_2()
+                    show([pause_btn])
+                    hide([level_2_btn, level_1_btn, select_blue_square, select_green_square, select_brown_square,
+                          select_yellow_square, select_red_square])
                     current_level = 2
-                    game = True
                     menu = False
-                    pygame.mixer.music.load('data/Spider Dance.mp3')
-                    pygame.mixer.music.play(-1)
-                if event.ui_element == gameover_btn1:
                     game = True
-                    gameover = False
-                    check_current_level(current_level)
-                if event.ui_element == gameover_btn2:
-                    gameover = False
-                    menu = True
-                    pygame.mixer.music.load('data/Menu.mp3')
-                    pygame.mixer.music.play(-1)
-                if event.ui_element == win_btn3:
-                    if current_level == 1:
-                        level_2()
-                        current_level = 2
-                    elif current_level == 2:
-                        level_1()
-                        current_level = 1
-                    win = False
-                    game = True
-                if event.ui_element == win_btn1:
-                    win = False
-                    game = True
-                    check_current_level(current_level)
-                if event.ui_element == win_btn2:
-                    menu = True
-                    win = False
-                    pygame.mixer.music.load('data/Menu.mp3')
-                    pygame.mixer.music.play(-1)
                 if event.ui_element == select_blue_square:
                     chosen_square = "blue_square.png"
                     all_unselect()
@@ -573,17 +540,7 @@ while running:
                 if event.ui_element == select_brown_square:
                     squares_in_shop, balance, chosen_square = buy_and_choose(2, squares_in_shop, balance, chosen_square,
                                                                              select_brown_square)
-        if game:
-            game_manager.process_events(event)
-        if pause:
-            pause_manager.process_events(event)
-        if menu:
-            menu_manager.process_events(event)
-        if gameover:
-            gameover_manager.process_events(event)
-        if win:
-            win_manager.process_events(event)
-
+        manager.process_events(event)
     if game:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP] or keys[pygame.K_w]:
@@ -595,32 +552,26 @@ while running:
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             char.move('right')
         all_sprites.update()
-    game_manager.update(time_delta)
-    game_manager.draw_ui(screen)
-    all_sprites.draw(screen)
+    manager.update(time_delta)
+    manager.draw_ui(SCREEN)
+    all_sprites.draw(SCREEN)
     if pause:
-        draw_small_background("Pause", screen, small_background, (150, 150, 255))
-        pause_manager.update(time_delta)
-        pause_manager.draw_ui(screen)
+        draw_small_background("Pause", SCREEN, small_background, (150, 150, 255))
     if menu:
-        screen.blit(menu_background, (0, 0))
-        choose_square.draw(screen)
-        menu_manager.update(time_delta)
-        menu_manager.draw_ui(screen)
+        SCREEN.blit(menu_background, (0, 0))
+        choose_square.draw(SCREEN)
     if gameover:
-        draw_small_background("Try again!", screen, small_background, (255, 100, 100))
-        gameover_manager.update(time_delta)
-        gameover_manager.draw_ui(screen)
+        draw_small_background("Try again!", SCREEN, small_background, (255, 100, 100))
     if win:
-        draw_small_background("Congrats! You win", screen, small_background, (150, 255, 150))
-        win_manager.update(time_delta)
-        win_manager.draw_ui(screen)
-    if pygame.mouse.get_focused():
+        draw_small_background("Congrats! You win", SCREEN, small_background, (150, 255, 150))
+    text = font.render(str(balance), True, (20, 20, 20))
+    SCREEN.blit(text, (750, 10))
+    manager.update(time_delta)
+    manager.draw_ui(SCREEN)
+    if pygame.mouse.get_focused():  # курсор
         cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
         pygame.mouse.set_visible(False)
-        cursor_group.draw(screen)
-    text = font.render(str(balance), True, (20, 20, 20))
-    screen.blit(text, (750, 10))
+        cursor_group.draw(SCREEN)
     pygame.display.flip()
 
 pygame.quit()
