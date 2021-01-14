@@ -4,10 +4,6 @@ import pygame_gui
 import pygame
 import pickle
 
-pygame.init()
-size = weight, height = (800, 500)
-pygame.display.set_caption("Game. Just game.")
-screen = pygame.display.set_mode(size)
 chosen_square = "blue_square.png"
 squares = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
 
@@ -341,6 +337,11 @@ class Border(pygame.sprite.Sprite):
             self.image = pygame.Surface([x2 - x1, 1])
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
+
+pygame.init()
+size = weight, height = (800, 500)
+pygame.display.set_caption("Game. Just game.")
+screen = pygame.display.set_mode(size)
 
 menu_manager = pygame_gui.UIManager(size)  # менеджер для ГИ в главном меню
 game_manager = pygame_gui.UIManager(size)  # менеджер для ГИ во время прохождения уровня
