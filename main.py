@@ -29,31 +29,25 @@ def load_image(name, colorkey=None):
     return image
 
 
-def check_current_level():
-    if current_level == 1:
+def check_current_level(lvl):
+    if lvl == 1:
         level_1()
-    if current_level == 2:
+    if lvl == 2:
         level_2()
 
 
-def draw_small_background(mngr):
-    screen.blit(small_background, (300, 130))
+def draw_small_background(txt, scrn, bg, color):
+    scrn.blit(bg, (300, 130))
     small_background.fill(pygame.Color(50, 50, 50), pygame.Rect(0, 0, 200, 40))
-    font = pygame.font.Font(None, 24)
-    if mngr == pause_manager:
-        text = font.render("Pause", True, (150, 150, 255))
-    if mngr == gameover_manager:
-        text = font.render("Try again!", True, (255, 100, 100))
-    if mngr == win_manager:
-        text = font.render("Congrats! You win!", True, (150, 255, 150))
-    text_x = 100 - text.get_width() // 2
-    text_y = 20 - text.get_height() // 2
-    small_background.blit(text, (text_x, text_y))
+    f = pygame.font.Font(None, 24)
+    txt = f.render(txt, True, color)
+    text_x = 100 - txt.get_width() // 2
+    text_y = 20 - txt.get_height() // 2
+    bg.blit(txt, (text_x, text_y))
 
 
-def char_custom():
-    menu_background.fill((200, 200, 200))
-    global choose_square, squares_in_shop
+def char_custom(bg, group, price):
+    bg.fill((200, 200, 200))
     blue, green, red, yellow, brown, coin1, coin2, coin3, coin4 = (pygame.sprite.Sprite(), pygame.sprite.Sprite(),
                                                                    pygame.sprite.Sprite(), pygame.sprite.Sprite(),
                                                                    pygame.sprite.Sprite(), pygame.sprite.Sprite(),
@@ -86,28 +80,30 @@ def char_custom():
     coin4.image = pygame.transform.scale(load_image('Coin 64-64 1.png', -1), (30, 30))
     coin4.rect = coin4.image.get_rect()
     coin4.rect.x, coin4.rect.y = 574, 368
-    font = pygame.font.Font(None, 22)
-    text = font.render(str(squares_in_shop[0][0]), True, (20, 20, 20))
-    menu_background.blit(text, (392, 378))
-    text = font.render(str(squares_in_shop[1][0]), True, (20, 20, 20))
-    menu_background.blit(text, (497, 378))
-    text = font.render(str(squares_in_shop[2][0]), True, (20, 20, 20))
-    menu_background.blit(text, (602, 378))
-    choose_square.add(blue, green, red, yellow, brown, coin1, coin2, coin3, coin4)
+    f = pygame.font.Font(None, 22)
+    t = f.render(str(price[0][0]), True, (20, 20, 20))
+    bg.blit(t, (392, 378))
+    t = f.render(str(price[1][0]), True, (20, 20, 20))
+    bg.blit(t, (497, 378))
+    t = f.render(str(price[2][0]), True, (20, 20, 20))
+    bg.blit(t, (602, 378))
+    group.add(blue, green, red, yellow, brown, coin1, coin2, coin3, coin4)
 
 
-def buy(n):
-    global squares_in_shop, balance, chosen_square
-    if squares_in_shop[n][1]:
-        chosen_square = squares_in_shop[n][2]
-    elif balance >= squares_in_shop[n][0]:
+def buy_and_choose(n, shop, blnce, chosen_sqr, btn):
+    if blnce >= squares_in_shop[n][0]:
         all_unselect()
-        balance -= squares_in_shop[n][0]
+        blnce -= squares_in_shop[n][0]
         squares_in_shop[n][1] = True
         squares_in_shop[n][0] = 0
-        chosen_square = squares_in_shop[n][2]
+        chosen_sqr = squares_in_shop[n][2]
         menu_background.fill(pygame.Color(220, 220, 220))
-        char_custom()
+        char_custom(menu_background, choose_square, squares_in_shop)
+    if squares_in_shop[n][1]:
+        chosen_sqr = squares_in_shop[n][2]
+        all_unselect()
+        btn.set_text('Selected')
+    return shop, blnce, chosen_sqr
 
 
 def all_unselect():
@@ -431,7 +427,7 @@ door_group = pygame.sprite.Group()
 key_group = pygame.sprite.Group()
 choose_square = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
-char_custom()
+char_custom(menu_background, choose_square, squares_in_shop)
 char = Character(0, 0, 0, 0)
 
 font = pygame.font.Font(None, 26)
@@ -491,7 +487,7 @@ while running:
                     unpickler = pickle.Unpickler(file)
                     if len(file.read()) != 0:
                         chosen_square, squares_in_shop, balance = unpickler.load()
-                char_custom()
+                char_custom(menu_background, choose_square, squares_in_shop)
                 if chosen_square == 'blue_square.png':
                     select_blue_square.set_text('Selected')
                 elif chosen_square == 'green_square.png':
@@ -510,7 +506,7 @@ while running:
                 if event.ui_element == pause_btn2:
                     pause = False
                     game = True
-                    check_current_level()
+                    check_current_level(current_level)
                 if event.ui_element == game_btn:
                     pause = True
                     game = False
@@ -536,7 +532,7 @@ while running:
                 if event.ui_element == gameover_btn1:
                     game = True
                     gameover = False
-                    check_current_level()
+                    check_current_level(current_level)
                 if event.ui_element == gameover_btn2:
                     gameover = False
                     menu = True
@@ -554,7 +550,7 @@ while running:
                 if event.ui_element == win_btn1:
                     win = False
                     game = True
-                    check_current_level()
+                    check_current_level(current_level)
                 if event.ui_element == win_btn2:
                     menu = True
                     win = False
@@ -569,20 +565,14 @@ while running:
                     all_unselect()
                     select_green_square.set_text('Selected')
                 if event.ui_element == select_red_square:
-                    buy(0)
-                    if squares_in_shop[0][1]:
-                        all_unselect()
-                        select_red_square.set_text('Selected')
+                    squares_in_shop, balance, chosen_square = buy_and_choose(0, squares_in_shop, balance, chosen_square,
+                                                                             select_red_square)
                 if event.ui_element == select_yellow_square:
-                    buy(1)
-                    if squares_in_shop[1][1]:
-                        all_unselect()
-                        select_yellow_square.set_text('Selected')
+                    squares_in_shop, balance, chosen_square = buy_and_choose(1, squares_in_shop, balance, chosen_square,
+                                                                             select_yellow_square)
                 if event.ui_element == select_brown_square:
-                    buy(2)
-                    if squares_in_shop[2][1]:
-                        all_unselect()
-                        select_brown_square.set_text('Selected')
+                    squares_in_shop, balance, chosen_square = buy_and_choose(2, squares_in_shop, balance, chosen_square,
+                                                                             select_brown_square)
         if game:
             game_manager.process_events(event)
         if pause:
@@ -609,7 +599,7 @@ while running:
     game_manager.draw_ui(screen)
     all_sprites.draw(screen)
     if pause:
-        draw_small_background(pause_manager)
+        draw_small_background("Pause", screen, small_background, (150, 150, 255))
         pause_manager.update(time_delta)
         pause_manager.draw_ui(screen)
     if menu:
@@ -618,11 +608,11 @@ while running:
         menu_manager.update(time_delta)
         menu_manager.draw_ui(screen)
     if gameover:
-        draw_small_background(gameover_manager)
+        draw_small_background("Try again!", screen, small_background, (255, 100, 100))
         gameover_manager.update(time_delta)
         gameover_manager.draw_ui(screen)
     if win:
-        draw_small_background(win_manager)
+        draw_small_background("Congrats! You win", screen, small_background, (150, 255, 150))
         win_manager.update(time_delta)
         win_manager.draw_ui(screen)
     if pygame.mouse.get_focused():
