@@ -5,7 +5,7 @@ import pygame
 import pickle
 
 chosen_square = "blue_square.png"
-squares = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
+squares_in_shop = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
 
 
 def load_image(name, colorkey=None):
@@ -48,7 +48,7 @@ def draw_small_background(mngr):
 
 def char_custom():
     menu_background.fill((200, 200, 200))
-    global choose_square, squares
+    global choose_square, squares_in_shop
     blue, green, red, yellow, brown, coin1, coin2, coin3, coin4 = (pygame.sprite.Sprite(), pygame.sprite.Sprite(),
                                                                    pygame.sprite.Sprite(), pygame.sprite.Sprite(),
                                                                    pygame.sprite.Sprite(), pygame.sprite.Sprite(),
@@ -82,25 +82,25 @@ def char_custom():
     coin4.rect = coin4.image.get_rect()
     coin4.rect.x, coin4.rect.y = 574, 368
     font = pygame.font.Font(None, 22)
-    text = font.render(str(squares[0][0]), True, (20, 20, 20))
+    text = font.render(str(squares_in_shop[0][0]), True, (20, 20, 20))
     menu_background.blit(text, (392, 378))
-    text = font.render(str(squares[1][0]), True, (20, 20, 20))
+    text = font.render(str(squares_in_shop[1][0]), True, (20, 20, 20))
     menu_background.blit(text, (497, 378))
-    text = font.render(str(squares[2][0]), True, (20, 20, 20))
+    text = font.render(str(squares_in_shop[2][0]), True, (20, 20, 20))
     menu_background.blit(text, (602, 378))
     choose_square.add(blue, green, red, yellow, brown, coin1, coin2, coin3, coin4)
 
 
 def buy(n):
-    global squares, balance, chosen_square
-    if squares[n][1]:
-        chosen_square = squares[n][2]
-    elif balance >= squares[n][0]:
+    global squares_in_shop, balance, chosen_square
+    if squares_in_shop[n][1]:
+        chosen_square = squares_in_shop[n][2]
+    elif balance >= squares_in_shop[n][0]:
         all_unselect()
-        balance -= squares[n][0]
-        squares[n][1] = True
-        squares[n][0] = 0
-        chosen_square = squares[n][2]
+        balance -= squares_in_shop[n][0]
+        squares_in_shop[n][1] = True
+        squares_in_shop[n][0] = 0
+        chosen_square = squares_in_shop[n][2]
         menu_background.fill(pygame.Color(220, 220, 220))
         char_custom()
 
@@ -486,12 +486,12 @@ while running:
                 mute = False
             elif event.key == pygame.K_s and event.mod & pygame.KMOD_CTRL:
                 with open("data/save.dat", 'wb') as file:
-                    pickle.dump((chosen_square, squares, balance), file)
+                    pickle.dump((chosen_square, squares_in_shop, balance), file)
             elif event.key == pygame.K_l and event.mod & pygame.KMOD_CTRL:
                 with open("data/save.dat", 'rb') as file:
                     unpickler = pickle.Unpickler(file)
                     if len(file.read()) != 0:
-                        chosen_square, squares, balance = unpickler.load()
+                        chosen_square, squares_in_shop, balance = unpickler.load()
                 char_custom()
                 if chosen_square == 'blue_square.png':
                     select_blue_square.set_text('Selected')
@@ -571,17 +571,17 @@ while running:
                     select_green_square.set_text('Selected')
                 if event.ui_element == select_red_square:
                     buy(0)
-                    if squares[0][1]:
+                    if squares_in_shop[0][1]:
                         all_unselect()
                         select_red_square.set_text('Selected')
                 if event.ui_element == select_yellow_square:
                     buy(1)
-                    if squares[1][1]:
+                    if squares_in_shop[1][1]:
                         all_unselect()
                         select_yellow_square.set_text('Selected')
                 if event.ui_element == select_brown_square:
                     buy(2)
-                    if squares[2][1]:
+                    if squares_in_shop[2][1]:
                         all_unselect()
                         select_brown_square.set_text('Selected')
         if game:
