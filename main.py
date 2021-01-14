@@ -4,6 +4,7 @@ import pygame_gui
 import pygame
 import pickle
 
+FPS = 330
 chosen_square = "blue_square.png"
 squares_in_shop = [[50, False, 'red_square.png'], [140, False, 'yellow_square.png'], [200, False, 'brown_square.png']]
 
@@ -455,12 +456,11 @@ game = False
 menu = True
 gameover = False
 win = False
-fps = 330
 clock = pygame.time.Clock()
 running = True
 while running:
     screen.fill('white')
-    time_delta = clock.tick(fps)
+    time_delta = clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
