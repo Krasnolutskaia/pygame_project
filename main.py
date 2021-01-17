@@ -494,12 +494,14 @@ def main():
                 elif event.key == pygame.K_s and event.mod & pygame.KMOD_CTRL:
                     with open("data/save.dat", 'wb') as file:
                         pickle.dump((chosen_square, squares_in_shop, balance), file)
+                        file.close()
                 elif event.key == pygame.K_l and event.mod & pygame.KMOD_CTRL:
                     with open("data/save.dat", 'rb') as file:
-                        unpickler = pickle.Unpickler(file)
-                        if len(file.read()) != 0:
-                            chosen_square, squares_in_shop, balance = unpickler.load()
+                        a = pickle.load(file)
+                        chosen_square, squares_in_shop, balance = a
+                        file.close()
                     draw_menu(menu_background, choose_square, squares_in_shop)
+                    all_unselect(btn_list)
                     if chosen_square == 'blue_square.png':
                         select_blue_square.set_text('Selected')
                     elif chosen_square == 'green_square.png':
@@ -541,7 +543,6 @@ def main():
                             pause = True
                             game = False
                     if event.ui_element == next_btn:
-                        print(remake_level(current_level, chosen_square, WIN_EVENT, GAMEOVER_EVENT, COIN_COLLECTED_EVENT, True))
                         current_level, all_sprites, horizontal_borders, vertical_borders, balls_group, coins_group,\
                             char, finish_group, door_group, key_group = remake_level(current_level, chosen_square,
                                                                                      WIN_EVENT, GAMEOVER_EVENT,
